@@ -86,7 +86,7 @@ awful.layout.layouts = {
 
 -- {{{ Menu
 -- Create a launcher widget and a main menu
-myawesomemenu = {
+local myawesomemenu = {
    { "hotkeys", function() hotkeys_popup.show_help(nil, awful.screen.focused()) end },
    { "manual", terminal .. " -e man awesome" },
    { "edit config", editor_cmd .. " " .. awesome.conffile },
@@ -113,7 +113,7 @@ else
 end
 
 
-mylauncher = awful.widget.launcher({ image = beautiful.awesome_icon,
+local mylauncher = awful.widget.launcher({ image = beautiful.awesome_icon,
 									 menu = mymainmenu })
 
 -- Menubar configuration
@@ -121,11 +121,11 @@ menubar.utils.terminal = terminal -- Set the terminal for applications that requ
 -- }}}
 
 -- Keyboard map indicator and switcher
-mykeyboardlayout = awful.widget.keyboardlayout()
+local mykeyboardlayout = awful.widget.keyboardlayout()
 
 -- {{{ Wibar
 -- Create a textclock widget
-mytextclock = wibox.widget.textclock()
+local mytextclock = wibox.widget.textclock()
 
 -- Create a wibox for each screen and add it
 
@@ -159,34 +159,34 @@ awful.screen.connect_for_each_screen(function(s)
 	)
 
 	-- Create a promptbox for each screen
-	s.mypromptbox = awful.widget.prompt()
+	local mypromptbox = awful.widget.prompt()
 	-- Create an imagebox widget which will contain an icon indicating which layout we're using.
 	-- We need one layoutbox per screen.
-	s.mylayoutbox = layoutbox(s)
+	local mylayoutbox = layoutbox(s)
 	-- Create a taglist widget
-	s.mytaglist = taglist(s)
+	local mytaglist = taglist(s)
 	-- Create a tasklist widget
-	s.mytasklist = tasklist(s)
+	local mytasklist = tasklist(s)
 
 	-- Create the wibox
-	s.mywibox = awful.wibar({ position = "top", screen = s })
+	local mywibox = awful.wibar({ position = "top", screen = s })
 
 	-- Add widgets to the wibox
-	s.mywibox:setup {
+	mywibox:setup {
 		layout = wibox.layout.align.horizontal,
 		{ -- Left widgets
 			layout = wibox.layout.fixed.horizontal,
 			mylauncher,
-			s.mytaglist,
-			s.mypromptbox,
+			mytaglist,
+			mypromptbox,
 		},
-		s.mytasklist, -- Middle widget
+		mytasklist, -- Middle widget
 		{ -- Right widgets
 			layout = wibox.layout.fixed.horizontal,
 			mykeyboardlayout,
 			wibox.widget.systray(),
 			mytextclock,
-			s.mylayoutbox,
+			mylayoutbox,
 		},
 	}
 end)
