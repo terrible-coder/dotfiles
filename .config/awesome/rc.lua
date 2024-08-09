@@ -80,20 +80,12 @@ else
 end
 
 
-local mylauncher = awful.widget.launcher({ image = beautiful.awesome_icon,
-									 menu = mymainmenu })
 
 -- Menubar configuration
 menubar.utils.terminal = vars.terminal -- Set the terminal for applications that require it
 -- }}}
 
--- Keyboard map indicator and switcher
-local mykeyboardlayout = awful.widget.keyboardlayout()
-
 -- {{{ Wibar
--- Create a textclock widget
-local mytextclock = wibox.widget.textclock()
-
 -- Create a wibox for each screen and add it
 
 local function set_wallpaper(s)
@@ -108,11 +100,6 @@ local function set_wallpaper(s)
 	end
 end
 
-local layoutbox = require("ui.layoutbox")
-local tasklist = require("ui.tasklist")
-local taglist = require("ui.taglist")
-local widgets = require("ui.widgets")
-
 -- Re-set wallpaper when a screen's geometry changes (e.g. different resolution)
 screen.connect_signal("property::geometry", set_wallpaper)
 
@@ -122,35 +109,10 @@ awful.screen.connect_for_each_screen(function(s)
 
 	-- Each screen has its own tag table.
 	awful.tag(vars.tags, s, awful.layout.layouts[1])
-
+	require("ui.topbar")(s)
 	-- Create a promptbox for each screen
-	local mypromptbox = awful.widget.prompt()
-	s.mypromptbox = mypromptbox
 	-- Create an imagebox widget which will contain an icon indicating which layout we're using.
-	local mylayoutbox = layoutbox(s)
-	local mytaglist = taglist(s)
-	local mytasklist = tasklist(s)
 
-	-- Create the wibox
-	local mywibox = awful.wibar({ position = "top", screen = s })
-	mywibox:setup {
-		layout = wibox.layout.align.horizontal,
-		{ -- Left widgets
-			layout = wibox.layout.fixed.horizontal,
-			mylauncher,
-			mytaglist,
-			mypromptbox,
-		},
-		mytasklist, -- Middle widget
-		{ -- Right widgets
-			layout = wibox.layout.fixed.horizontal,
-			widgets.volume,
-			mykeyboardlayout,
-			wibox.widget.systray(),
-			mytextclock,
-			mylayoutbox,
-		},
-	}
 end)
 -- }}}
 
