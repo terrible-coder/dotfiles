@@ -65,8 +65,7 @@ screen.connect_signal("property::geometry", set_wallpaper)
 
 awful.screen.connect_for_each_screen(function(s)
 	-- Wallpaper
-	set_wallpaper(s)
-
+	-- set_wallpaper(s)
 	-- Each screen has its own tag table.
 	awful.tag(vars.tags, s, awful.layout.layouts[1])
 	require("ui.topbar")(s)
@@ -105,7 +104,9 @@ end)
 client.connect_signal("focus", function(c) c.border_color = beautiful.border_focus end)
 client.connect_signal("unfocus", function(c) c.border_color = beautiful.border_normal end)
 -- }}}
---
+
+-- Autostart
+awful.spawn("~/.config/awesome/scripts/autostart.sh")
 
 gears.timer({
 	timeout = 60,
