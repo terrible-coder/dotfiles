@@ -6,9 +6,12 @@ local awful = require("awful")
 local hotkeys_popup = require("awful.hotkeys_popup")
 local gears = require("gears")
 
+local vars = require("config.vars")
 local sound = require("sys.sound")
-local modkey = require("config.vars").modkey
-local terminal = require("config.vars").terminal
+local menu = require("ui.menu")
+local modkey = vars.modkey
+local terminal = vars.terminal
+
 
 local global_keys = gears.table.join(
 	awful.key(
@@ -43,7 +46,7 @@ local global_keys = gears.table.join(
 		{ description = "focus previous by index", group = "client" }
 	),
 	awful.key(
-		{ modkey }, "w", function () mymainmenu:show() end,
+		{ modkey }, "w", function () menu:show() end,
 		{ description = "show main menu", group = "awesome" }
 	),
 
@@ -224,7 +227,7 @@ for i = 1, 9 do
 end
 
 local global_buttons = gears.table.join(
-	awful.button({ }, 3, function () mymainmenu:toggle() end),
+	awful.button({ }, 3, function () menu:toggle() end),
 	awful.button({ }, 4, awful.tag.viewnext),
 	awful.button({ }, 5, awful.tag.viewprev)
 )

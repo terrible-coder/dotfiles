@@ -6,26 +6,20 @@ pcall(require, "luarocks.loader")
 local gears = require("gears")
 local awful = require("awful")
 require("awful.autofocus")
--- Widget and layout library
-local wibox = require("wibox")
 -- Theme handling library
 local beautiful = require("beautiful")
 -- Notification library
 local naughty = require("naughty")
-local menubar = require("menubar")
-local hotkeys_popup = require("awful.hotkeys_popup")
-
--- Load Debian menu entries
-local debian = require("debian.menu")
-local has_fdo, freedesktop = pcall(require, "freedesktop")
 
 -- {{{ Error handling
 -- Check if awesome encountered an error during startup and fell back to
 -- another config (This code will only ever execute for the fallback config)
 if awesome.startup_errors then
-	naughty.notify({ preset = naughty.config.presets.critical,
-					 title = "Oops, there were errors during startup!",
-					 text = awesome.startup_errors })
+	naughty.notify({
+		preset = naughty.config.presets.critical,
+		title = "Oops, there were errors during startup!",
+		text = awesome.startup_errors
+	})
 end
 
 -- Handle runtime errors after startup
@@ -36,57 +30,23 @@ do
 		if in_error then return end
 		in_error = true
 
-		naughty.notify({ preset = naughty.config.presets.critical,
-						 title = "Oops, an error happened!",
-						 text = tostring(err) })
+		naughty.notify({
+			preset = naughty.config.presets.critical,
+			title = "Oops, an error happened!",
+			text = tostring(err)
+		})
 		in_error = false
 	end)
 end
 -- }}}
 
--- {{{ Variable definitions
 local vars = require("config.vars")
+require("menubar").utils.terminal = vars.terminal
 -- Themes define colours, icons, font and wallpapers.
 beautiful.init(gears.filesystem.get_themes_dir() .. "default/theme.lua")
 
 -- Table of layouts to cover with awful.layout.inc, order matters.
 awful.layout.layouts = vars.layouts
--- }}}
-
--- {{{ Menu
--- Create a launcher widget and a main menu
-local myawesomemenu = {
-   { "hotkeys", function() hotkeys_popup.show_help(nil, awful.screen.focused()) end },
-   { "restart", awesome.restart },
-   { "quit", function() awesome.quit() end },
-}
-
-local menu_awesome = { "awesome", myawesomemenu, beautiful.awesome_icon }
-local menu_terminal = { "open terminal", vars.terminal }
-
-if has_fdo then
-	mymainmenu = freedesktop.menu.build({
-		before = { menu_awesome },
-		after =  { menu_terminal }
-	})
-else
-	mymainmenu = awful.menu({
-		items = {
-				  menu_awesome,
-				  { "Debian", debian.menu.Debian_menu.Debian },
-				  menu_terminal,
-				}
-	})
-end
-
-
-
--- Menubar configuration
-menubar.utils.terminal = vars.terminal -- Set the terminal for applications that require it
--- }}}
-
--- {{{ Wibar
--- Create a wibox for each screen and add it
 
 local function set_wallpaper(s)
 	-- Wallpaper
