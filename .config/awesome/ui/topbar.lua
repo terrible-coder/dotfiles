@@ -20,13 +20,15 @@ return function(s)
 	local master_bar = awful.wibar({ position = "top", screen = s })
 	master_bar:setup {
 		layout = wibox.layout.align.horizontal,
+		expand = "none",
 		{ -- Left widgets
 			layout = wibox.layout.fixed.horizontal,
+			spacing = 10,
 			launcher,
-			taglist(s),
+			tasklist(s), -- Middle widget
 			promptbox,
 		},
-		tasklist(s), -- Middle widget
+			taglist(s),
 		{ -- Right widgets
 			layout = wibox.layout.fixed.horizontal,
 			widgets.brightness,

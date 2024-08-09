@@ -3,6 +3,8 @@ local Capi = {
 }
 local awful = require("awful")
 local gtable = require("gears.table")
+local gshape = require("gears.shape")
+local wibox = require("wibox")
 
 local tasklist_buttons = gtable.join(
 	awful.button({ }, 1,
@@ -19,6 +21,23 @@ return function(s)
 	return awful.widget.tasklist({
 		screen  = s,
 		filter  = awful.widget.tasklist.filter.minimizedcurrenttags,
-		buttons = tasklist_buttons
+		buttons = tasklist_buttons,
+		layout = {
+			layout = wibox.layout.flex.horizontal,
+			spacing = 5
+		},
+		style = { shape = function(cr, w, h) gshape.rounded_rect(cr, w, h, 2) end },
+		widget_template = {
+			widget = wibox.container.background,
+			id = "background_role",
+			{
+				widget = wibox.container.margin,
+				left = 5, right = 5, top = 2, bottom = 2,
+				{
+					widget = wibox.widget.imagebox,
+					id = "icon_role",
+				}
+			}
+		}
 	})
 end
