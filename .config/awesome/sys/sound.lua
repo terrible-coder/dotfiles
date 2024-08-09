@@ -17,11 +17,13 @@ function sound:change(delta)
 		aspawn("pactl set-sink-volume @DEFAULT_SINK@ +"..delta.."%")
 	end
 	self.volume = volume
+	self:client_update()
 end
 
 function sound:toggle_mute()
 	aspawn("pactl set-sink-mute @DEFAULT_SINK@ toggle")
 	self.mute = not self.mute
+	self:client_update()
 end
 
 function sound:sync(cback)

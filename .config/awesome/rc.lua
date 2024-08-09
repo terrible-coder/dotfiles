@@ -144,6 +144,7 @@ end
 local layoutbox = require("ui.layoutbox")
 local tasklist = require("ui.tasklist")
 local taglist = require("ui.taglist")
+local widgets = require("ui.widgets")
 
 -- Re-set wallpaper when a screen's geometry changes (e.g. different resolution)
 screen.connect_signal("property::geometry", set_wallpaper)
@@ -183,6 +184,7 @@ awful.screen.connect_for_each_screen(function(s)
 		mytasklist, -- Middle widget
 		{ -- Right widgets
 			layout = wibox.layout.fixed.horizontal,
+			widgets.volume,
 			mykeyboardlayout,
 			wibox.widget.systray(),
 			mytextclock,
