@@ -29,6 +29,7 @@ return function(s)
 		tasklist(s), -- Middle widget
 		{ -- Right widgets
 			layout = wibox.layout.fixed.horizontal,
+			widgets.brightness,
 			widgets.volume,
 			keyboardlayout,
 			wibox.widget.systray(),

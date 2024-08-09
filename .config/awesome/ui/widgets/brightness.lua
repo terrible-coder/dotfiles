@@ -1,7 +1,7 @@
 local gshape = require("gears.shape")
 local wibox = require("wibox")
 
-local server = require("sys.sound")
+local server = require("sys.backlight")
 
 local bar_wgt = wibox.widget({
 	widget = wibox.container.background,
@@ -16,7 +16,7 @@ local bar_wgt = wibox.widget({
 			{
 				widget = wibox.widget.textbox,
 				id = "icon",
-				text = "",
+				text = "󰃟",
 			},
 			{
 				widget = wibox.widget.textbox,
@@ -27,8 +27,8 @@ local bar_wgt = wibox.widget({
 	}
 })
 
-server:sync(function(_, volume)
-	bar_wgt:get_children_by_id("value")[1].text = volume.."%"
+server:sync(function(percentage)
+	bar_wgt:get_children_by_id("value")[1].text = percentage.."%"
 end)
 
 return bar_wgt
