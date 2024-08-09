@@ -6,6 +6,8 @@ local awful = require("awful")
 local hotkeys_popup = require("awful.hotkeys_popup")
 local gears = require("gears")
 
+local sound = require("sys.sound")
+
 local global_keys = gears.table.join(
 	awful.key(
 		{ modkey }, "s",hotkeys_popup.show_help,
@@ -218,6 +220,14 @@ local global_buttons = gears.table.join(
 	awful.button({ }, 3, function () mymainmenu:toggle() end),
 	awful.button({ }, 4, awful.tag.viewnext),
 	awful.button({ }, 5, awful.tag.viewprev)
+)
+
+global_keys = gears.table.join(global_keys,
+	awful.key({ }, "XF86AudioMute", function() sound:toggle_mute() end),
+	awful.key({ }, "XF86AudioLowerVolume", function() sound:change(-5) end),
+	awful.key({ }, "XF86AudioRaiseVolume", function() sound:change( 5) end)
+	-- awful.key({ }, "X86", sound:change( 5)),
+	-- awful.key({ }, "X86", sound:change( 5))
 )
 
 return {
