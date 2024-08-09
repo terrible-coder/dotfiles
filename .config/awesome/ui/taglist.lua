@@ -3,6 +3,10 @@ local Capi = {
 }
 local awful = require("awful")
 local gtable = require("gears.table")
+local gshape = require("gears.shape")
+local wibox = require("wibox")
+
+local modkey = require("config.vars").modkey
 
 local taglist_buttons = gtable.join(
 	awful.button({ }, 1, function(t) t:view_only() end),
@@ -23,6 +27,23 @@ return function(s)
 	return awful.widget.taglist({
 		screen  = s,
 		filter  = awful.widget.taglist.filter.all,
-		buttons = taglist_buttons
+		buttons = taglist_buttons,
+		style = { shape = function(cr, w, h) gshape.rounded_rect(cr, w, h, 2) end },
+		layout = {
+			layout = wibox.layout.flex.horizontal,
+			spacing = 2,
+		},
+		widget_template = {
+			widget = wibox.container.background,
+			id = "background_role",
+			{
+				widget = wibox.container.margin,
+				left = 10, right = 10,
+				{
+					widget = wibox.widget.textbox,
+					id = "text_role",
+				},
+			},
+		}
 	})
 end
