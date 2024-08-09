@@ -14,6 +14,12 @@ local tasklist  = require("ui.tasklist")
 local taglist   = require("ui.taglist")
 local widgets   = require("ui.widgets")
 
+local separator = wibox.widget({
+	widget = wibox.widget.separator,
+	orientation = "vertical",
+	forced_width = 5,
+})
+
 return function(s)
 	local promptbox = awful.widget.prompt()
 	s.promptbox = promptbox -- i did not want to do this but too much work to fix
@@ -31,8 +37,10 @@ return function(s)
 			taglist(s),
 		{ -- Right widgets
 			layout = wibox.layout.fixed.horizontal,
+			separator,
 			widgets.brightness,
 			widgets.volume,
+			separator,
 			keyboardlayout,
 			wibox.widget.systray(),
 			textclock,
