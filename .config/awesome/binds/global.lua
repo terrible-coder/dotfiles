@@ -8,6 +8,7 @@ local gears = require("gears")
 
 local vars = require("config.vars")
 local sound = require("sys.sound")
+local blight = require("sys.backlight")
 local menu = require("ui.menu")
 local modkey = vars.modkey
 local terminal = vars.terminal
@@ -235,9 +236,9 @@ local global_buttons = gears.table.join(
 global_keys = gears.table.join(global_keys,
 	awful.key({ }, "XF86AudioMute", function() sound:toggle_mute() end),
 	awful.key({ }, "XF86AudioLowerVolume", function() sound:change(-5) end),
-	awful.key({ }, "XF86AudioRaiseVolume", function() sound:change( 5) end)
-	-- awful.key({ }, "X86", sound:change( 5)),
-	-- awful.key({ }, "X86", sound:change( 5))
+	awful.key({ }, "XF86AudioRaiseVolume", function() sound:change( 5) end),
+	awful.key({ }, "XF86MonBrightnessDown", function() blight:change(-5) end),
+	awful.key({ }, "XF86MonBrightnessUp", function() blight:change( 5) end)
 )
 
 return {
