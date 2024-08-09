@@ -158,7 +158,7 @@ local global_keys = gears.table.join(
 		{ description = "lua execute prompt", group = "awesome" }),
 	-- Menubar
 	awful.key(
-		{ modkey }, "p", function() menubar.show() end,
+		{ modkey }, "p", function() require("menubar").show() end,
 		{ description = "show the menubar", group = "launcher" }
 	)
 )
