@@ -88,7 +88,7 @@ local global_keys = gears.table.join(
 		{ description = "reload awesome", group = "awesome" }
 	),
 	awful.key(
-		{ modkey }, "q", Capi.awesome.quit,
+		{ modkey, "Shift" }, "q", Capi.awesome.quit,
 		{ description = "quit awesome", group = "awesome" }
 	),
 
@@ -155,11 +155,16 @@ local global_keys = gears.table.join(
 				history_path = awful.util.get_cache_dir() .. "/history_eval"
 			}
 		end,
-		{ description = "lua execute prompt", group = "awesome" }),
+		{ description = "lua execute prompt", group = "awesome" }
+	),
 	-- Menubar
 	awful.key(
 		{ modkey }, "p", function() require("menubar").show() end,
 		{ description = "show the menubar", group = "launcher" }
+	),
+	awful.key(
+		{ modkey }, "b", function() awful.spawn("waterbox") end,
+		{ description = "launch browser", group = "launcher" }
 	)
 )
 

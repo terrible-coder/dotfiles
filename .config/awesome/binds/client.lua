@@ -11,7 +11,7 @@ local client_keys = gears.table.join(
 		{ description = "toggle fullscreen", group = "client" }
 	),
 	awful.key(
-		{ modkey, "Shift" }, "c", function (c) c:kill() end,
+		{ modkey }, "c", function (c) c:kill() end,
 			{ description = "close", group = "client" }
 		),
 	awful.key(
