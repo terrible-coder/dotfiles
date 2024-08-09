@@ -45,39 +45,12 @@ end
 -- }}}
 
 -- {{{ Variable definitions
+local vars = require("config.vars")
 -- Themes define colours, icons, font and wallpapers.
 beautiful.init(gears.filesystem.get_themes_dir() .. "default/theme.lua")
 
--- This is used later as the default terminal and editor to run.
-terminal = "kitty"
-editor = os.getenv("EDITOR") or "editor"
-
--- Default modkey.
--- Usually, Mod4 is the key with a logo between Control and Alt.
--- If you do not like this or do not have such a key,
--- I suggest you to remap Mod4 to another key using xmodmap or other tools.
--- However, you can use another modifier like Mod1, but it may interact with others.
-modkey = "Mod4"
-
 -- Table of layouts to cover with awful.layout.inc, order matters.
-awful.layout.layouts = {
-	awful.layout.suit.tile,
-	awful.layout.suit.tile.left,
-	awful.layout.suit.tile.bottom,
-	awful.layout.suit.tile.top,
-	-- awful.layout.suit.fair,
-	-- awful.layout.suit.fair.horizontal,
-	-- awful.layout.suit.spiral,
-	awful.layout.suit.spiral.dwindle,
-	-- awful.layout.suit.max,
-	awful.layout.suit.max.fullscreen,
-	awful.layout.suit.floating,
-	awful.layout.suit.magnifier,
-	-- awful.layout.suit.corner.nw,
-	-- awful.layout.suit.corner.ne,
-	-- awful.layout.suit.corner.sw,
-	-- awful.layout.suit.corner.se,
-}
+awful.layout.layouts = vars.layouts
 -- }}}
 
 -- {{{ Menu
@@ -89,7 +62,7 @@ local myawesomemenu = {
 }
 
 local menu_awesome = { "awesome", myawesomemenu, beautiful.awesome_icon }
-local menu_terminal = { "open terminal", terminal }
+local menu_terminal = { "open terminal", vars.terminal }
 
 if has_fdo then
 	mymainmenu = freedesktop.menu.build({
@@ -111,7 +84,7 @@ local mylauncher = awful.widget.launcher({ image = beautiful.awesome_icon,
 									 menu = mymainmenu })
 
 -- Menubar configuration
-menubar.utils.terminal = terminal -- Set the terminal for applications that require it
+menubar.utils.terminal = vars.terminal -- Set the terminal for applications that require it
 -- }}}
 
 -- Keyboard map indicator and switcher
@@ -148,26 +121,18 @@ awful.screen.connect_for_each_screen(function(s)
 	set_wallpaper(s)
 
 	-- Each screen has its own tag table.
-	awful.tag(
-		{ "1", "2", "3", "4", "5", "6", "7", "8", "9" },
-		s, awful.layout.layouts[1]
-	)
+	awful.tag(vars.tags, s, awful.layout.layouts[1])
 
 	-- Create a promptbox for each screen
 	local mypromptbox = awful.widget.prompt()
 	s.mypromptbox = mypromptbox
 	-- Create an imagebox widget which will contain an icon indicating which layout we're using.
-	-- We need one layoutbox per screen.
 	local mylayoutbox = layoutbox(s)
-	-- Create a taglist widget
 	local mytaglist = taglist(s)
-	-- Create a tasklist widget
 	local mytasklist = tasklist(s)
 
 	-- Create the wibox
 	local mywibox = awful.wibar({ position = "top", screen = s })
-
-	-- Add widgets to the wibox
 	mywibox:setup {
 		layout = wibox.layout.align.horizontal,
 		{ -- Left widgets
@@ -189,10 +154,7 @@ awful.screen.connect_for_each_screen(function(s)
 end)
 -- }}}
 
--- {{{ Key bindings
 local binds = require("binds")
-
--- Set keys
 root.keys(binds.global.keys)
 root.buttons(binds.global.buttons)
 

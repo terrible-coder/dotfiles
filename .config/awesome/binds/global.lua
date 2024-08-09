@@ -7,6 +7,8 @@ local hotkeys_popup = require("awful.hotkeys_popup")
 local gears = require("gears")
 
 local sound = require("sys.sound")
+local modkey = require("config.vars").modkey
+local terminal = require("config.vars").terminal
 
 local global_keys = gears.table.join(
 	awful.key(

@@ -1,6 +1,8 @@
 local awful = require("awful")
 local gears = require("gears")
 
+local modkey = require("config.vars").modkey
+
 local client_keys = gears.table.join(
 	awful.key(
 		{ modkey }, "f",
