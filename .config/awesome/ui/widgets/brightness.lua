@@ -42,9 +42,20 @@ local slider = wibox.widget({
 
 local label = wibox.widget.textbox("00")
 
+-- prevent flooding system with mutliple calls to external programmes
+local slider_drag = true
 slider:connect_signal("property::value", function(self)
-	server:change(self.value - server.level)
+	slider_drag = true
 	label.text = ("%02d%%"):format(self.value)
+end)
+
+-- this trigger is fired relying solely on
+-- https://github.com/awesomeWM/awesome/issues/1241#issuecomment-264109466
+-- does not work in v4.3
+slider:connect_signal("button::release", function()
+		if not slider_drag then return end
+		slider_drag = false
+		server:change(slider.value - server.level)
 end)
 
 local brightness_popup = awful.popup({
