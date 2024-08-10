@@ -62,8 +62,18 @@ local slider = awful.popup({
 	ontop = true,
 	visible = false,
 })
+
 bar_wgt:buttons(
-	awful.button({ }, 1, function() slider.visible = not slider.visible end)
+	awful.button({ }, 1,
+	function()
+		awful.placement.next_to(slider, {
+			preferred_positions = { "bottom" },
+			preferred_anchors = { "middle" },
+			mode = "cursor_inside",
+			offset = { y = 5 },
+		})
+		slider.visible = not slider.visible
+	end)
 )
 
 server:sync(function(_, volume)

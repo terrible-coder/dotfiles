@@ -58,13 +58,25 @@ local slider = awful.popup({
 			}
 		}
 	},
-	placement = awful.placement.centered,
+	placement = { }, -- seems optional
 	ontop = true,
 	visible = false,
+	parent = bar_wgt, -- seems optional
 })
+
 bar_wgt:buttons(
-	awful.button({ }, 1, function() slider.visible = not slider.visible end)
+	awful.button({ }, 1,
+	function()
+		awful.placement.next_to(slider, {
+			preferred_positions = { "bottom" },
+			preferred_anchors = { "middle" },
+			mode = "cursor_inside",
+			offset = { y = 5 },
+		})
+		slider.visible = not slider.visible
+	end)
 )
+
 server:sync(function(percentage)
 	bar_wgt:get_children_by_id("value")[1].text = percentage.."%"
 end)
