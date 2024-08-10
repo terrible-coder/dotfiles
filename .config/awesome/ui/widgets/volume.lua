@@ -1,8 +1,12 @@
 local awful = require("awful")
 local gshape = require("gears.shape")
+local gtimer = require("gears.timer")
 local wibox = require("wibox")
 
 local server = require("sys.sound")
+
+local bar_wgt_label = wibox.widget.textbox("00")
+bar_wgt_label.visible = false
 
 local bar_wgt = wibox.widget({
 	widget = wibox.container.background,
@@ -19,11 +23,7 @@ local bar_wgt = wibox.widget({
 				id = "icon",
 				text = "",
 			},
-			{
-				widget = wibox.widget.textbox,
-				id = "value",
-				text = "00",
-			}
+			bar_wgt_label,
 		}
 	}
 })
@@ -40,13 +40,14 @@ local slider = wibox.widget({
 	value = 0,
 })
 
-local label = wibox.widget.textbox("00")
+local text_label = wibox.widget.textbox("00")
+local icon_label = wibox.widget.textbox("  ")
 
 -- prevent flooding system with mutliple calls to external programmes
 local slider_drag = true
 slider:connect_signal("property::value", function(self)
 	slider_drag = true
-	label.text = ("%02d%%"):format(self.value)
+	text_label.text = ("%02d%%"):format(self.value)
 end)
 
 -- this trigger is fired relying solely on
@@ -68,12 +69,13 @@ local volume_popup = awful.popup({
 			{
 				layout = wibox.layout.fixed.vertical,
 				spacing = 5,
+				icon_label,
 				{
 					widget = wibox.container.rotate,
 					direction = "east",
 					slider,
 				},
-				label
+				text_label
 			}
 		}
 	},
@@ -97,7 +99,17 @@ bar_wgt:buttons(
 
 server:sync(function(_, volume)
 	slider.value = volume
-	bar_wgt:get_children_by_id("value")[1].text = volume.."%"
+	bar_wgt_label.text = volume.."%"
+	bar_wgt_label.visible = true
+	gtimer({
+		callback = function()
+			bar_wgt_label.visible = false
+		end,
+		single_shot = true,
+		call_now = false,
+		autostart = true,
+		timeout = 2,
+	})
 end)
 
 return bar_wgt
