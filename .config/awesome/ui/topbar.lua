@@ -2,8 +2,8 @@ local awful = require("awful")
 local wibox = require("wibox")
 local beautiful = require("beautiful")
 
-local keyboardlayout = awful.widget.keyboardlayout()
-local textclock = wibox.widget.textclock()
+-- local keyboardlayout = awful.widget.keyboardlayout()
+local textclock = wibox.widget.textclock("%H:%M")
 local launcher = awful.widget.launcher({
 	image = beautiful.awesome_icon,
 	menu = require("ui.menu")
@@ -37,11 +37,12 @@ return function(s)
 			taglist(s),
 		{ -- Right widgets
 			layout = wibox.layout.fixed.horizontal,
+			spacing = 5,
 			separator,
 			widgets.brightness,
 			widgets.volume,
 			separator,
-			keyboardlayout,
+			-- keyboardlayout,
 			wibox.widget.systray(),
 			textclock,
 			layoutbox(s),
