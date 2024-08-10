@@ -106,7 +106,7 @@ client.connect_signal("unfocus", function(c) c.border_color = beautiful.border_n
 -- }}}
 
 -- Autostart
-awful.spawn("~/.config/awesome/scripts/autostart.sh")
+awful.spawn.with_shell("~/.config/awesome/scripts/autostart.sh")
 
 gears.timer({
 	timeout = 60,
