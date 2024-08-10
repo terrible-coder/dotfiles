@@ -1,3 +1,4 @@
+local awful = require("awful")
 local gshape = require("gears.shape")
 local wibox = require("wibox")
 
@@ -26,6 +27,44 @@ local bar_wgt = wibox.widget({
 		}
 	}
 })
+
+local slider = awful.popup({
+	widget = {
+		widget = wibox.container.background,
+		bg = "#268f28",
+		{
+			widget = wibox.container.margin,
+			margins = 5,
+			{
+				layout = wibox.layout.fixed.vertical,
+				spacing = 5,
+				{
+					widget = wibox.container.rotate,
+					direction = "east",
+					{
+						widget = wibox.widget.slider,
+						bar_height = 2, bar_width = 30,
+						bar_shape = gshape.rounded_bar,
+						minimum = 0, maximum = 100,
+						forced_width = 100, forced_height = 2,
+						value = 0,
+					},
+				},
+				{
+					widget = wibox.widget.textbox,
+					id = "value",
+					text = "00",
+				}
+			}
+		}
+	},
+	placement = awful.placement.centered,
+	ontop = true,
+	visible = false,
+})
+bar_wgt:buttons(
+	awful.button({ }, 1, function() slider.visible = not slider.visible end)
+)
 
 server:sync(function(_, volume)
 	bar_wgt:get_children_by_id("value")[1].text = volume.."%"
