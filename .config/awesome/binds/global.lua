@@ -169,7 +169,7 @@ local global_keys = gears.table.join(
 		{ description = "show the menubar", group = "launcher" }
 	),
 	awful.key(
-		{ modkey }, "b", function() awful.spawn("waterbox") end,
+		{ modkey }, "b", function() awful.spawn("waterfox") end,
 		{ description = "launch browser", group = "launcher" }
 	)
 )
