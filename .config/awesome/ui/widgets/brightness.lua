@@ -28,7 +28,26 @@ local bar_wgt = wibox.widget({
 	}
 })
 
-local slider = awful.popup({
+local slider = wibox.widget({
+	widget = wibox.widget.slider,
+	bar_height = 2, bar_width = 30,
+	bar_shape = gshape.rounded_bar,
+	handle_shape = gshape.rounded_rect,
+	handle_width = 5,
+	handle_margins = { top = 2, bottom = 2 },
+	minimum = 0, maximum = 100,
+	forced_width = 100, forced_height = 2,
+	value = 0,
+})
+
+local label = wibox.widget.textbox("00")
+
+slider:connect_signal("property::value", function(self)
+	server:change(self.value - server.level)
+	label.text = ("%02d%%"):format(self.value)
+end)
+
+local brightness_popup = awful.popup({
 	widget = {
 		widget = wibox.container.background,
 		bg = "#268f28",
@@ -41,43 +60,32 @@ local slider = awful.popup({
 				{
 					widget = wibox.container.rotate,
 					direction = "east",
-					{
-						widget = wibox.widget.slider,
-						bar_height = 2, bar_width = 30,
-						bar_shape = gshape.rounded_bar,
-						minimum = 0, maximum = 100,
-						forced_width = 100, forced_height = 2,
-						value = 0,
-					},
+					slider,
 				},
-				{
-					widget = wibox.widget.textbox,
-					id = "value",
-					text = "00",
-				}
+				label
 			}
 		}
 	},
-	placement = { }, -- seems optional
+	placement = { },
 	ontop = true,
 	visible = false,
-	parent = bar_wgt, -- seems optional
 })
 
 bar_wgt:buttons(
 	awful.button({ }, 1,
 	function()
-		awful.placement.next_to(slider, {
+		awful.placement.next_to(brightness_popup, {
 			preferred_positions = { "bottom" },
 			preferred_anchors = { "middle" },
 			mode = "cursor_inside",
 			offset = { y = 5 },
 		})
-		slider.visible = not slider.visible
+		brightness_popup.visible = not brightness_popup.visible
 	end)
 )
 
 server:sync(function(percentage)
+	slider.value = percentage
 	bar_wgt:get_children_by_id("value")[1].text = percentage.."%"
 end)
 
