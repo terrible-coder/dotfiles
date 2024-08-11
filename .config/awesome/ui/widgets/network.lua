@@ -28,6 +28,25 @@ local bar_wgt = wibox.widget({
 	}
 })
 
+local ssid_label = wibox.widget.textbox("ssid")
+local speed_label = wibox.widget({
+	widget = wibox.container.background,
+	{
+		layout = wibox.layout.flex.horizontal,
+		spacing = 5,
+		{
+			widget = wibox.widget.textbox,
+			id = "up_speed",
+			text = "00",
+		},
+		{
+			widget = wibox.widget.textbox,
+			id = "down_speed",
+			text = "00",
+		},
+	}
+})
+
 local net_popup = awful.popup({
 	widget = {
 		widget = wibox.container.background,
@@ -36,11 +55,22 @@ local net_popup = awful.popup({
 			widget = wibox.container.margin,
 			margins = 5,
 			{
-				widget = wibox.widget.textbox,
-				text = "SSID"
+				layout = wibox.layout.flex.vertical,
+				spacing = 5,
+				{
+					widget = wibox.container.margin,
+					margins = 20,
+					ssid_label,
+				},
+				{
+					widget = wibox.container.margin,
+					margins = 20,
+					speed_label,
+				}
 			}
 		}
 	},
+	shape = function(cr, w, h) gshape.rounded_rect(cr, w, h, 2) end,
 	placement = { },
 	ontop = true,
 	visible = false,
@@ -62,6 +92,12 @@ bar_wgt:buttons(
 server:sync(function(conn)
 	bar_wgt_label.text = conn.ssid
 	bar_wgt_label.visible = true
+	speed_label.visible = server.enabled
+	if server.enabled then
+		ssid_label.text = conn.ssid
+	else
+		ssid_label.text = "Disconnected"
+	end
 	gtimer({
 		callback = function()
 			bar_wgt_label.visible = false

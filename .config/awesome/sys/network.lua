@@ -46,7 +46,7 @@ function wireless:update()
 			self.enabled = enabled
 		end
 		if not self.enabled and not to_update then return end
-		local bssid, ssid, signal
+		local bssid, ssid, signal = "", "", "0"
 		for line in out:gmatch("[^\r\n]+") do
 			if line:match("^%*") then
 				local itr = line:gmatch("(.-)%s%s+")
