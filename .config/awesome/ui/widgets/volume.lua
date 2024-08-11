@@ -32,11 +32,11 @@ local slider = wibox.widget({
 	widget = wibox.widget.slider,
 	bar_height = 2, bar_width = 30,
 	bar_shape = gshape.rounded_bar,
-	handle_shape = gshape.rounded_rect,
+	handle_shape = function(cr, w, h) gshape.circle(cr, w, h, 5) end,
 	handle_width = 5,
 	handle_margins = { top = 2, bottom = 2 },
 	minimum = 0, maximum = 100,
-	forced_width = 100, forced_height = 2,
+	forced_width = 120, forced_height = 5,
 	value = 0,
 })
 
@@ -75,6 +75,7 @@ local volume_popup = awful.popup({
 			}
 		}
 	},
+	shape = function(cr, w, h) gshape.rounded_rect(cr, w, h, 5) end,
 	placement = { },
 	ontop = true,
 	visible = false,
