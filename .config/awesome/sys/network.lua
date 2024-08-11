@@ -27,7 +27,7 @@ function wireless:disable()
 end
 
 function wireless:sync(cback)
-	self.callbacks = table.insert(self.callbacks, cback)
+	table.insert(self.callbacks, cback)
 	cback(self)
 end
 
@@ -74,3 +74,5 @@ gtimer({
 		wireless:update()
 	end
 })
+
+return wireless

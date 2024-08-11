@@ -38,6 +38,7 @@ return function(s)
 		{ -- Right widgets
 			layout = wibox.layout.fixed.horizontal,
 			spacing = 5,
+			widgets.network,
 			separator,
 			widgets.brightness,
 			widgets.volume,
