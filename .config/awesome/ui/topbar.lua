@@ -43,6 +43,7 @@ return function(s)
 			widgets.brightness,
 			widgets.volume,
 			separator,
+			widgets.battery,
 			-- keyboardlayout,
 			wibox.widget.systray(),
 			textclock,
