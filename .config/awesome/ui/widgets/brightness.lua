@@ -67,14 +67,10 @@ local brightness_popup = awful.popup({
 			widget = wibox.container.margin,
 			margins = 5,
 			{
-				layout = wibox.layout.fixed.vertical,
+				layout = wibox.layout.fixed.horizontal,
 				spacing = 5,
 				icon_label,
-				{
-					widget = wibox.container.rotate,
-					direction = "east",
-					slider,
-				},
+				slider,
 				text_label
 			}
 		}
