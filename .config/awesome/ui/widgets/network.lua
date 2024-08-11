@@ -59,8 +59,8 @@ bar_wgt:buttons(
 	end)
 )
 
-server:sync(function(_)
-	-- bar_wgt_label.text = percentage.."%"
+server:sync(function(conn)
+	bar_wgt_label.text = conn.ssid
 	bar_wgt_label.visible = true
 	gtimer({
 		callback = function()

@@ -57,10 +57,10 @@ function wireless:update()
 			end
 		end
 		signal = tonumber(signal)
-		to_update = to_update or
-			bssid ~= self.bssid or ssid ~= self.ssid or signal ~= self.signal
+		self.signal = signal
+		to_update = to_update or bssid ~= self.bssid or ssid ~= self.ssid
 		if to_update then
-			self.bssid, self.ssid, self.signal = bssid, ssid, signal
+			self.bssid, self.ssid = bssid, ssid
 			self:client_update()
 		end
 	end)
