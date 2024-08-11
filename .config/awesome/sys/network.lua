@@ -39,13 +39,13 @@ end
 
 function wireless:update()
 	aspawn.easy_async("nmcli d wifi", function(out)
+		local to_update = false
 		local enabled = select(2, out:gsub("[^\r\n]+", "")) > 1
-		if not enabled and self.enabled then
+		if enabled ~= self.enabled then
+			to_update = true
 			self.enabled = enabled
-			self:client_update()
-			return
 		end
-		if not self.enabled then return end
+		if not self.enabled and not to_update then return end
 		local bssid, ssid, signal
 		for line in out:gmatch("[^\r\n]+") do
 			if line:match("^%*") then
@@ -57,7 +57,9 @@ function wireless:update()
 			end
 		end
 		signal = tonumber(signal)
-		if bssid ~= self.bssid or ssid ~= self.ssid or signal ~= self.signal then
+		to_update = to_update or
+			bssid ~= self.bssid or ssid ~= self.ssid or signal ~= self.signal
+		if to_update then
 			self.bssid, self.ssid, self.signal = bssid, ssid, signal
 			self:client_update()
 		end
