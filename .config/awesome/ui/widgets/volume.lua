@@ -94,9 +94,9 @@ bar_wgt:buttons(
 	end)
 )
 
-server:sync(function(_, volume)
-	slider.value = volume
-	bar_wgt_label.text = volume.."%"
+server:connect_signal("sound::update", function(self)
+	slider.value = self.volume
+	bar_wgt_label.text = self.volume.."%"
 	bar_wgt_label.visible = true
 	gtimer({
 		callback = function()

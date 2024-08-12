@@ -89,12 +89,12 @@ bar_wgt:buttons(
 	end)
 )
 
-server:sync(function(conn)
-	bar_wgt_label.text = conn.ssid
+server:connect_signal("network::update", function(self)
+	bar_wgt_label.text = self.ssid
 	bar_wgt_label.visible = true
 	speed_label.visible = server.enabled
 	if server.enabled then
-		ssid_label.text = conn.ssid
+		ssid_label.text = self.ssid
 	else
 		ssid_label.text = "Disconnected"
 	end

@@ -94,9 +94,9 @@ bar_wgt:buttons(
 	end)
 )
 
-server:sync(function(percentage)
-	slider.value = percentage
-	bar_wgt_label.text = percentage.."%"
+server:connect_signal("backlight::update", function(self)
+	slider.value = self.level
+	bar_wgt_label.text = self.level.."%"
 	bar_wgt_label.visible = true
 	gtimer({
 		callback = function()

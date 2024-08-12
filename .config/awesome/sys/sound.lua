@@ -1,11 +1,13 @@
 local aspawn = require("awful.spawn")
 local gtimer = require("gears.timer")
+local gobject = require("gears.object")
 
 local sound = {
 	mute = false,
 	volume = 0,
-	callbacks = { }
 }
+
+sound = gobject({ class = sound })
 
 function sound:change(delta)
 	if delta == 0 then return end
@@ -17,24 +19,13 @@ function sound:change(delta)
 		aspawn("pactl set-sink-volume @DEFAULT_SINK@ +"..delta.."%")
 	end
 	self.volume = volume
-	self:client_update()
+	self:emit_signal("sound::update")
 end
 
 function sound:toggle_mute()
 	aspawn("pactl set-sink-mute @DEFAULT_SINK@ toggle")
 	self.mute = not self.mute
-	self:client_update()
-end
-
-function sound:sync(cback)
-	table.insert(self.callbacks, cback)
-	cback(self.mute, self.volume)
-end
-
-function sound:client_update()
-	for _, cback in pairs(self.callbacks) do
-		cback(self.mute, self.volume)
-	end
+	self:emit_signal("sound::update")
 end
 
 function sound:update()
@@ -44,7 +35,7 @@ function sound:update()
 			local volume = tonumber(out:match("(.%d%d)%%"))
 			if volume ~= self.volume then
 				self.volume = volume
-				self:client_update()
+				self:emit_signal("sound::update")
 			end
 			-- local lines = { }
 			-- local i = 1

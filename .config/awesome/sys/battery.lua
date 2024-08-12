@@ -1,5 +1,6 @@
 local aspawn = require("awful.spawn")
 local gtimer = require("gears.timer")
+local gobject = require("gears.object")
 
 local battery = {
 	level = 0,
@@ -7,18 +8,9 @@ local battery = {
 	waiting = "0h",
 	charging = false,
 	health = 100,
-	callbacks = { }
 }
 
-function battery:sync(cback)
-	table.insert(self.callbacks, cback)
-end
-
-function battery:client_update()
-	for _, cback in pairs(self.callbacks) do
-		cback(self.mode, self.level, self.charging)
-	end
-end
+battery = gobject({ class = battery })
 
 function battery:update()
 	aspawn.easy_async("acpi -bi", function(out)
@@ -27,7 +19,7 @@ function battery:update()
 		if level ~= self.level then
 			self.level = level
 			self.waiting = waiting
-			self:client_update()
+			self:emit_signal("battery::update")
 		end
 		self.health = out:match("mAh = (%d?%d?%d)%%")
 	end)

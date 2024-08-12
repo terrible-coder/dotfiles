@@ -1,10 +1,11 @@
 local aspawn = require("awful.spawn")
 local gtimer = require("gears.timer")
+local gobject = require("gears.object")
 
 local backlight = {
 	level = 0,
-	callbacks = { }
 }
+backlight = gobject({ class = backlight })
 
 function backlight:change(delta)
 	if delta == 0 then return end
@@ -16,18 +17,7 @@ function backlight:change(delta)
 		aspawn("brightnessctl set "..delta.."%+")
 	end
 	self.level = level
-	self:client_update()
-end
-
-function backlight:sync(cback)
-	table.insert(self.callbacks, cback)
-	cback(self.level)
-end
-
-function backlight:client_update()
-	for _, cback in pairs(self.callbacks) do
-		cback(self.level)
-	end
+	self:emit_signal("backlight::update")
 end
 
 function backlight:update()
@@ -37,7 +27,7 @@ function backlight:update()
 			local level = tonumber(out:match("(%d?%d%d)%%"))
 			if level ~= self.level then
 				self.level = level
-				self:client_update()
+				self:emit_signal("backlight::update")
 			end
 		end
 	)

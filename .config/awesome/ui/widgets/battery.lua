@@ -58,10 +58,10 @@ bar_wgt:buttons(
 	end)
 )
 
-server:sync(function(mode, level, charging)
-	text_label.text = level.."%"
-	popup_level.text = level.."%"
-	popup_waiting.text = server.waiting
+server:connect_signal("battery::update", function(self)
+	text_label.text = self.level.."%"
+	popup_level.text = self.level.."%"
+	popup_waiting.text = self.waiting
 end)
 
 return bar_wgt
