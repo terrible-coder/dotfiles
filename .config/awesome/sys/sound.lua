@@ -47,12 +47,11 @@ function sound:update()
 	)
 end
 
-sound.timer = gtimer({
-	timeout = 10,
+gtimer({
+	timeout = 2,
 	autostart = true,
-	callback = function()
-		sound:update()
-	end
+	single_shot = true,
+	callback = function() sound:update() end
 })
 
 return sound

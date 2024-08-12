@@ -33,12 +33,11 @@ function backlight:update()
 	)
 end
 
-backlight.timer = gtimer({
-	timeout = 10,
+gtimer({
+	timeout = 2,
 	autostart = true,
-	callback = function()
-		backlight:update()
-	end
+	single_shot = true,
+	callback = function() backlight:update() end
 })
 
 return backlight
