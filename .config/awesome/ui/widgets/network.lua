@@ -1,3 +1,6 @@
+local Capi = {
+	awesome = awesome,
+}
 local awful = require("awful")
 local gshape = require("gears.shape")
 local gtimer = require("gears.timer")
@@ -76,18 +79,29 @@ local net_popup = awful.popup({
 	visible = false,
 })
 
+net_popup.uid = 140
+
 bar_wgt:buttons(
 	awful.button({ }, 1,
 	function()
-		awful.placement.next_to(net_popup, {
-			preferred_positions = { "bottom" },
-			preferred_anchors = { "middle" },
-			mode = "cursor_inside",
-			offset = { y = 5 },
-		})
-		net_popup.visible = not net_popup.visible
+		Capi.awesome.emit_signal("popup_show", net_popup.uid)
 	end)
 )
+
+Capi.awesome.connect_signal("popup_show", function(uid)
+	if uid == net_popup.uid then
+		net_popup.visible = not net_popup.visible
+	else
+		net_popup.visible = false
+	end
+	if not net_popup.visible then return end
+	awful.placement.next_to(net_popup, {
+		preferred_positions = { "bottom" },
+		preferred_anchors = { "middle" },
+		mode = "cursor_inside",
+		offset = { y = 5 },
+	})
+end)
 
 server:connect_signal("network::update", function(self)
 	bar_wgt_label.text = self.ssid

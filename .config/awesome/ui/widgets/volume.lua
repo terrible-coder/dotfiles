@@ -1,3 +1,6 @@
+local Capi = {
+	awesome = awesome,
+}
 local awful = require("awful")
 local gshape = require("gears.shape")
 local gtimer = require("gears.timer")
@@ -81,18 +84,29 @@ local volume_popup = awful.popup({
 	visible = false,
 })
 
+volume_popup.uid = 220
+
 bar_wgt:buttons(
 	awful.button({ }, 1,
 	function()
-		awful.placement.next_to(volume_popup, {
-			preferred_positions = { "bottom" },
-			preferred_anchors = { "middle" },
-			mode = "cursor_inside",
-			offset = { y = 5 },
-		})
-		volume_popup.visible = not volume_popup.visible
+		Capi.awesome.emit_signal("popup_show", volume_popup.uid)
 	end)
 )
+
+Capi.awesome.connect_signal("popup_show", function(uid)
+	if uid == volume_popup.uid then
+		volume_popup.visible = not volume_popup.visible
+	else
+		volume_popup.visible = false
+	end
+	if not volume_popup.visible then return end
+	awful.placement.next_to(volume_popup, {
+		preferred_positions = { "bottom" },
+		preferred_anchors = { "middle" },
+		mode = "cursor_inside",
+		offset = { y = 5 },
+	})
+end)
 
 server:connect_signal("sound::update", function(self)
 	slider.value = self.volume

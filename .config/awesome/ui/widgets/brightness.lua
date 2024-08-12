@@ -1,3 +1,6 @@
+local Capi = {
+	awesome = awesome,
+}
 local awful = require("awful")
 local gshape = require("gears.shape")
 local gtimer = require("gears.timer")
@@ -81,18 +84,29 @@ local brightness_popup = awful.popup({
 	visible = false,
 })
 
+brightness_popup.uid = 218
+
 bar_wgt:buttons(
 	awful.button({ }, 1,
 	function()
-		awful.placement.next_to(brightness_popup, {
-			preferred_positions = { "bottom" },
-			preferred_anchors = { "middle" },
-			mode = "cursor_inside",
-			offset = { y = 5 },
-		})
-		brightness_popup.visible = not brightness_popup.visible
+		Capi.awesome.emit_signal("popup_show", brightness_popup.uid)
 	end)
 )
+
+Capi.awesome.connect_signal("popup_show", function(uid)
+	if uid == brightness_popup.uid then
+		brightness_popup.visible = not brightness_popup.visible
+	else
+		brightness_popup.visible = false
+	end
+	if not brightness_popup.visible then return end
+	awful.placement.next_to(brightness_popup, {
+		preferred_positions = { "bottom" },
+		preferred_anchors = { "middle" },
+		mode = "cursor_inside",
+		offset = { y = 5 },
+	})
+end)
 
 server:connect_signal("backlight::update", function(self)
 	slider.value = self.level

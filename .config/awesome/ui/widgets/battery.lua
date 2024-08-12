@@ -1,3 +1,6 @@
+local Capi = {
+	awesome = awesome,
+}
 local awful = require("awful")
 local gshape = require("gears.shape")
 local wibox = require("wibox")
@@ -45,18 +48,29 @@ local battery_popup = awful.popup({
 	visible = false
 })
 
+battery_popup.uid = 200
+
 bar_wgt:buttons(
 	awful.button({ }, 1,
 	function()
-		awful.placement.next_to(battery_popup, {
-			preferred_positions = { "bottom" },
-			preferred_anchors = { "middle" },
-			mode = "cursor_inside",
-			offset = { y = 5 },
-		})
-		battery_popup.visible = not battery_popup.visible
+		Capi.awesome.emit_signal("popup_show", battery_popup.uid)
 	end)
 )
+
+Capi.awesome.connect_signal("popup_show", function(uid)
+	if uid == battery_popup.uid then
+		battery_popup.visible = not battery_popup.visible
+	else
+		battery_popup.visible = false
+	end
+	if not battery_popup.visible then return end
+	awful.placement.next_to(battery_popup, {
+		preferred_positions = { "bottom" },
+		preferred_anchors = { "middle" },
+		mode = "cursor_inside",
+		offset = { y = 5 },
+	})
+end)
 
 server:connect_signal("battery::update", function(self)
 	text_label.text = self.level.."%"
