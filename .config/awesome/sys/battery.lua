@@ -16,7 +16,7 @@ function battery:update()
 		self.health = tonumber(out:match("mAh = (%d?%d?%d)%%"))
 	end)
 	aspawn.with_line_callback(
-		[[bash -c "
+		[[sh -c "
 			while true; do acpi -b | sed 's/Battery [0-9]\+:\s\+//'; sleep 10; done
 		"]],
 		{
