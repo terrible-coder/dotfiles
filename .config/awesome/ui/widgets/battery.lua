@@ -83,13 +83,13 @@ server:connect_signal("battery::update", function(self)
 	popup_waiting.text = self.waiting
 	local health_indicator = ""
 	if self.health > 80 then
-		health_indicator = ":-D"
+		health_indicator = "  "
 	elseif self.health > 65 then
-		health_indicator = ":-)"
+		health_indicator = "  "
 	elseif self.health > 50 then
-		health_indicator = ":-|"
+		health_indicator = "  "
 	else
-		health_indicator = ":-("
+		health_indicator = "  "
 	end
 	popup_health.text = self.health.."% ("..health_indicator..")"
 end)
