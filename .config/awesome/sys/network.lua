@@ -1,6 +1,6 @@
 local aspawn = require("awful.spawn")
-local gtimer = require("gears.timer")
 local gobject = require("gears.object")
+local config_dir = require("gears.filesystem").get_configuration_dir()
 
 local wireless = {
 	device = "wlp3s0",
@@ -29,41 +29,42 @@ function wireless:disable()
 end
 
 function wireless:update()
-	aspawn.easy_async("nmcli d wifi", function(out)
-		local to_update = false
-		local enabled = select(2, out:gsub("[^\r\n]+", "")) > 1
-		if enabled ~= self.enabled then
-			to_update = true
-			self.enabled = enabled
-		end
-		if not self.enabled and not to_update then return end
-		local bssid, ssid, signal = "", "", "0"
-		for line in out:gmatch("[^\r\n]+") do
-			if line:match("^%*") then
-				local itr = line:gmatch("(.-)%s%s+")
-				itr() -- throw '*'
-				bssid, ssid = itr(), itr()
-				_, _, _, signal = itr(), itr(), itr(), itr()
-				break
-			end
-		end
-		signal = tonumber(signal)
-		self.signal = signal
-		to_update = to_update or bssid ~= self.bssid or ssid ~= self.ssid
-		if to_update then
-			self.bssid, self.ssid = bssid, ssid
-			self:emit_signal("network::update")
-		end
-	end)
+	aspawn.with_line_callback(
+		"sh "..config_dir.."scripts/poll-wifi.sh",
+		{
+			stdout = function(out)
+				if out == "Disabled" then
+					if self.enabled then
+						self.enabled = false
+						self:emit_signal("network::update")
+					end
+					return
+				end
+				local fields = out:gmatch("[^,]+")
+				local bssid = fields()
+				local ssid = fields()
+				local signal = tonumber(fields())
+				local to_update = not self.enabled
+				self.enabled = true
+				to_update = to_update or bssid ~= self.bssid or ssid ~= self.ssid
+				if to_update then
+					self.bssid, self.ssid = bssid, ssid
+					self.signal = signal
+					self:emit_signal("network::update")
+				end
+			end,
+			stderr = function(err)
+				local naughty = require("naughty")
+				naughty.notify({
+					title = "Oops! Error in sys.network!",
+					text = err,
+					preset = naughty.config.presets.critical,
+				})
+			end,
+		}
+	)
 end
 
-gtimer({
-	timeout = 10,
-	call_now = false,
-	autostart = true,
-	callback = function()
-		wireless:update()
-	end
-})
+wireless:update()
 
 return wireless
