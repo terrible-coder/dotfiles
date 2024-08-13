@@ -1,5 +1,6 @@
 local aspawn = require("awful.spawn")
 local gobject = require("gears.object")
+local config_dir = require("gears.filesystem").get_configuration_dir()
 
 local battery = {
 	level = 0,
@@ -16,9 +17,7 @@ function battery:update()
 		self.health = tonumber(out:match("mAh = (%d?%d?%d)%%"))
 	end)
 	aspawn.with_line_callback(
-		[[sh -c "
-			while true; do acpi -b | sed 's/Battery [0-9]\+:\s\+//'; sleep 10; done
-		"]],
+		"sh "..config_dir.."scripts/poll-battery.sh",
 		{
 			stdout = function(out)
 				self.charging = out:sub(1, 1)
