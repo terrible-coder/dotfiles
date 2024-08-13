@@ -27,6 +27,7 @@ local bar_wgt = wibox.widget({
 
 local popup_level = wibox.widget.textbox("00")
 local popup_waiting = wibox.widget.textbox("00:00:00")
+local popup_health = wibox.widget.textbox("00")
 
 local battery_popup = awful.popup({
 	widget = {
@@ -36,9 +37,13 @@ local battery_popup = awful.popup({
 			widget = wibox.container.margin,
 			margins = 10,
 			{
-				layout = wibox.layout.fixed.horizontal,
-				spacing = 20,
-				popup_level, popup_waiting,
+				layout = wibox.layout.fixed.vertical,
+				{
+					layout = wibox.layout.fixed.horizontal,
+					spacing = 20,
+					popup_level, popup_waiting,
+				},
+				popup_health,
 			}
 		}
 	},
@@ -76,6 +81,17 @@ server:connect_signal("battery::update", function(self)
 	text_label.text = self.level.."%"
 	popup_level.text = self.level.."%"
 	popup_waiting.text = self.waiting
+	local health_indicator = ""
+	if self.health > 80 then
+		health_indicator = ":-D"
+	elseif self.health > 65 then
+		health_indicator = ":-)"
+	elseif self.health > 50 then
+		health_indicator = ":-|"
+	else
+		health_indicator = ":-("
+	end
+	popup_health.text = self.health.."% ("..health_indicator..")"
 end)
 
 return bar_wgt
