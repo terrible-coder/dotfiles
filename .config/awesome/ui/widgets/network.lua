@@ -8,7 +8,7 @@ local wibox = require("wibox")
 
 local server = require("sys.network")
 
-local bar_wgt_label = wibox.widget.textbox("00")
+local bar_wgt_label = wibox.widget.textbox("Wi-fi off")
 bar_wgt_label.visible = false
 
 local bar_wgt = wibox.widget({
@@ -104,13 +104,19 @@ Capi.awesome.connect_signal("popup_show", function(uid)
 end)
 
 server:connect_signal("network::update", function(self)
-	bar_wgt_label.text = self.ssid
 	bar_wgt_label.visible = true
 	speed_label.visible = server.enabled
 	if server.enabled then
-		ssid_label.text = self.ssid
+		if self.connection then
+			ssid_label.text = self.ssid
+			bar_wgt_label.text = self.ssid
+		else
+			ssid_label.text = "Disconnected"
+			bar_wgt_label.text = "Disconnected"
+		end
 	else
-		ssid_label.text = "Disconnected"
+		ssid_label.text = "Wi-fi off"
+		bar_wgt_label.text = "Wi-fi off"
 	end
 	gtimer({
 		callback = function()
@@ -121,6 +127,6 @@ server:connect_signal("network::update", function(self)
 		autostart = true,
 		timeout = 2,
 	})
-end)
+		end)
 
 return bar_wgt

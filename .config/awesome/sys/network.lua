@@ -4,7 +4,8 @@ local config_dir = require("gears.filesystem").get_configuration_dir()
 
 local wireless = {
 	device = "wlp3s0",
-	enabled = true,
+	enabled = false,
+	connection = true,
 	bssid = "",
 	ssid = "",
 	signal = 0,
@@ -34,8 +35,22 @@ function wireless:update()
 		{
 			stdout = function(out)
 				if out == "Disabled" then
+					self.ssid = ""
+					self.bssid = ""
+					self.signal = -1
 					if self.enabled then
 						self.enabled = false
+						self.connection = false
+						self:emit_signal("network::update")
+					end
+					return
+				elseif out == "Disconnected" then
+					self.ssid = ""
+					self.bssid = ""
+					self.signal = -1
+					if not self.enabled or self.connection then
+						self.enabled = true
+						self.connection = false
 						self:emit_signal("network::update")
 					end
 					return
@@ -44,8 +59,9 @@ function wireless:update()
 				local bssid = fields()
 				local ssid = fields()
 				local signal = tonumber(fields())
-				local to_update = not self.enabled
+				local to_update = not self.enabled or not self.connection
 				self.enabled = true
+				self.connection = true
 				to_update = to_update or bssid ~= self.bssid or ssid ~= self.ssid
 				if to_update then
 					self.bssid, self.ssid = bssid, ssid

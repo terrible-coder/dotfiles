@@ -8,10 +8,16 @@ do
 	else
 		echo "$networks" | awk 'BEGIN {
 			FS = "  +";
-			OFS = ","
+			OFS = ",";
+			in_use = 0;
 		}
 		/^\*/ {
 			print $2, $3, $7;
+			in_use++;
+		}
+		END {
+			if (in_use < 1)
+				print "Disconnected"
 		}'
 	fi
 	sleep 10
