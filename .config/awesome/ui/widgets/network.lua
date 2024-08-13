@@ -73,7 +73,7 @@ local net_popup = awful.popup({
 			}
 		}
 	},
-	shape = function(cr, w, h) gshape.rounded_rect(cr, w, h, 2) end,
+	shape = function(cr, w, h) gshape.rounded_rect(cr, w, h, 5) end,
 	placement = { },
 	ontop = true,
 	visible = false,
