@@ -1,0 +1,11 @@
+!! Colourscheme
+
+! special
+*.foreground: #f8f8f2
+*.background: #282a36
+*.cursorColor: #00ff00
+*.font: xft:JetBrainsMonoNL Nerd Font Mono:style=Regular:size=9
+
+!! URxvt appearance
+
+URxvt.scrollBar: false
