@@ -44,7 +44,6 @@ local slider = wibox.widget({
 })
 
 local text_label = wibox.widget.textbox("00")
-local icon_label = wibox.widget.textbox("  ")
 
 -- prevent flooding system with mutliple calls to external programmes
 local slider_drag = true
@@ -68,13 +67,20 @@ local volume_popup = awful.popup({
 		bg = "#268f28",
 		{
 			widget = wibox.container.margin,
-			margins = 5,
+			top = 10, bottom = 10, left = 15, right = 15,
 			{
-				layout = wibox.layout.fixed.horizontal,
+				layout = wibox.layout.fixed.vertical,
 				spacing = 5,
-				icon_label,
-				slider,
-				text_label
+				{
+					widget = wibox.widget.textbox,
+					text = "Volume",
+				},
+				{
+					layout = wibox.layout.fixed.horizontal,
+					spacing = 10,
+					slider,
+					text_label
+				}
 			}
 		}
 	},
