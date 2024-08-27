@@ -13,6 +13,7 @@ local layoutbox = require("ui.layoutbox")
 local tasklist  = require("ui.tasklist")
 local taglist   = require("ui.taglist")
 local widgets   = require("ui.widgets")
+local pulse     = require("pulseaudio_widget")
 
 local separator = wibox.widget({
 	widget = wibox.widget.separator,
@@ -41,7 +42,8 @@ return function(s)
 			widgets.network,
 			separator,
 			widgets.brightness,
-			widgets.volume,
+			-- widgets.volume,
+			pulse,
 			separator,
 			widgets.battery,
 			-- keyboardlayout,
