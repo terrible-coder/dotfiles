@@ -1,5 +1,4 @@
 local aspawn = require("awful.spawn")
-local gtimer = require("gears.timer")
 local gobject = require("gears.object")
 
 local sound = {
@@ -19,39 +18,11 @@ function sound:change(delta)
 		aspawn("pactl set-sink-volume @DEFAULT_SINK@ +"..delta.."%")
 	end
 	self.volume = volume
-	self:emit_signal("sound::update")
 end
 
 function sound:toggle_mute()
 	aspawn("pactl set-sink-mute @DEFAULT_SINK@ toggle")
 	self.mute = not self.mute
-	self:emit_signal("sound::update")
 end
-
-function sound:update()
-	aspawn.easy_async(
-		"pactl list sinks",
-		function(out)
-			local volume = tonumber(out:match("(.%d%d)%%"))
-			if volume ~= self.volume then
-				self.volume = volume
-				self:emit_signal("sound::update")
-			end
-			-- local lines = { }
-			-- local i = 1
-			-- for s in out:gmatch("[^\r\n]+") do
-			-- 	lines[i] = s
-			-- 	i = i + 1
-			-- end
-		end
-	)
-end
-
-gtimer({
-	timeout = 2,
-	autostart = true,
-	single_shot = true,
-	callback = function() sound:update() end
-})
 
 return sound
