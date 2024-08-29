@@ -1,16 +1,28 @@
-local Capi = {
-	awesome = awesome,
-}
-local awful = require("awful")
+-- local Capi = {
+-- 	awesome = awesome,
+-- }
+-- local awful = require("awful")
 local gshape = require("gears.shape")
-local gtimer = require("gears.timer")
 local wibox = require("wibox")
-local pulse = require("pulseaudio_widget")
+local pulse_dbus = require("pulseaudio_dbus")
 
-local server = require("sys.sound")
+local address = pulse_dbus.get_address()
+local connection = pulse_dbus.get_connection(address)
+local core = pulse_dbus.get_core(connection)
+local sinks = { }
+for i, v in ipairs(core:get_sinks()) do
+	sinks[i] = pulse_dbus.get_device(connection, v)
+end
+local sources = { }
+for i, v in ipairs(core:get_sources()) do
+	sources[i] = pulse_dbus.get_device(connection, v)
+end
 
-local bar_wgt_label = wibox.widget.textbox("00")
-bar_wgt_label.visible = false
+-- this will listen for these signals from every object
+core:ListenForSignal("org.PulseAudio.Core1.Device.VolumeUpdated", { })
+core:ListenForSignal("org.PulseAudio.Core1.Device.MuteUpdated", { })
+
+local bar_wgt_label = wibox.widget.textbox(sinks[1]:get_volume_percent()[1].."%")
 
 local bar_wgt = wibox.widget({
 	widget = wibox.container.background,
@@ -31,6 +43,32 @@ local bar_wgt = wibox.widget({
 		}
 	}
 })
+
+local function listen_device(device)
+	if device.signals.VolumeUpdated then
+		device:connect_signal(function(this, _)
+			bar_wgt_label.text = this:get_volume_percent()[1].."%"
+		end, "VolumeUpdated")
+	end
+	if device.signals.MuteUpdated then
+		device:connect_signal(function(this, is_mute)
+			if is_mute then
+				bar_wgt_label.text = "Muted"
+			else
+				bar_wgt_label.text = this:get_volume_percent()[1].."%"
+			end
+		end, "MuteUpdated")
+	end
+end
+
+for _, v in ipairs(sinks) do
+	listen_device(v)
+end
+for _, v in ipairs(sources) do
+	if v.Name and not v.Name:match("%.monitor$") then
+		listen_device(v)
+	end
+end
 
 -- local slider = wibox.widget({
 -- 	widget = wibox.widget.slider,
@@ -115,19 +153,4 @@ local bar_wgt = wibox.widget({
 -- 	})
 -- end)
 
-server:connect_signal("sound::update", function(self)
-	-- slider.value = self.volume
-	bar_wgt_label.text = self.volume.."%"
-	bar_wgt_label.visible = true
-	gtimer({
-		callback = function()
-			bar_wgt_label.visible = false
-		end,
-		single_shot = true,
-		call_now = false,
-		autostart = true,
-		timeout = 2,
-	})
-end)
-
-return pulse
+return bar_wgt
