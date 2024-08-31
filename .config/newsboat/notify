@@ -1,0 +1,4 @@
+#! /usr/bin/bash
+summary=$(cut -d , -f 1 <<< "$1")
+body=$(cut -d , -f 2 <<< "$1")
+notify-send -i ~/.config/newsboat/logo.png "$summary" "$body"

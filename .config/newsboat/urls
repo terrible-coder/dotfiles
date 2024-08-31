@@ -1,0 +1,28 @@
+"Physical Review"
+http://feeds.aps.org/rss/recent/prb.xml "PRB"
+http://feeds.aps.org/rss/recent/pre.xml "PRE"
+
+Comics
+https://www.smbc-comics.com/comic/rss "Comics" "~Saturday Morning Breakfast Cereal"
+https://xkcd.com/rss.xml "Comics" "~xkcd"
+https://www.oglaf.com/feeds/rss/ "Comics" "~Oglaf"
+https://explosm.net/rss.xml "Comics"
+
+Blogs
+https://www.bombaydost.co.in/feeds/posts/default?alt=rss "Blog" "~Bombay Dost | LGBTQIA+ Community in India"
+https://www.cyberciti.com/faq/feed/ "Blog" "~Cyberciti"
+https://medium.com/feed/@burntrose "Blog" "~burntrose on Medium"
+
+YouTube
+https://www.youtube.com/feeds/videos.xml?channel_id=UCEcR-YyDkwd8agxK2Djn4RA "YouTube" "~Pranav Radhakrishnan"
+https://www.youtube.com/feeds/videos.xml?channel_id=UCz4a7agVFr1TxU-mpAP8hkw "YouTube" "~Soch by Mohak Mangal"
+https://www.youtube.com/feeds/videos.xml?channel_id=UC2eYFnH61tmytImy1mTYvhA "YouTube" "~Luke Smith"
+https://www.youtube.com/feeds/videos.xml?channel_id=UCylGUf9BvQooEFjgdNudoQg "YouTube" "~The Linux Cast"
+https://www.youtube.com/feeds/videos.xml?channel_id=UCUM2qwOfZosAf55s66FsGbQ "YouTube" "~Sham Sharma Show Global"
+
+News
+https://www.thehindubusinessline.com/news/national/feeder/default.rss "News" "~The Hindu businessline National"
+https://www.thehindubusinessline.com/news/science/feeder/default.rss "News" "~The Hindu businessline Science"
+https://www.newslaundry.com/stories.rss?time-period=last-7-days&exclude-section-ids=15848,15817 "News"
+https://www.thehindu.com/opinion/columns/feeder/default.rss "News" "~The Hindu | Columns"
+───
