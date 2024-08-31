@@ -1,10 +1,10 @@
--- local Capi = {
--- 	awesome = awesome,
--- }
--- local awful = require("awful")
+local Capi = {
+	awesome = awesome,
+}
+local awful = require("awful")
 local gshape = require("gears.shape")
 local wibox = require("wibox")
-local pulse_dbus = require("pulseaudio_dbus")
+local pulse_dbus = require("pulseaudio_dbus-master")
 
 local address = pulse_dbus.get_address()
 local connection = pulse_dbus.get_connection(address)
@@ -44,32 +44,6 @@ local bar_wgt = wibox.widget({
 	}
 })
 
-local function listen_device(device)
-	if device.signals.VolumeUpdated then
-		device:connect_signal(function(this, _)
-			bar_wgt_label.text = this:get_volume_percent()[1].."%"
-		end, "VolumeUpdated")
-	end
-	if device.signals.MuteUpdated then
-		device:connect_signal(function(this, is_mute)
-			if is_mute then
-				bar_wgt_label.text = "Muted"
-			else
-				bar_wgt_label.text = this:get_volume_percent()[1].."%"
-			end
-		end, "MuteUpdated")
-	end
-end
-
-for _, v in ipairs(sinks) do
-	listen_device(v)
-end
-for _, v in ipairs(sources) do
-	if v.Name and not v.Name:match("%.monitor$") then
-		listen_device(v)
-	end
-end
-
 -- local slider = wibox.widget({
 -- 	widget = wibox.widget.slider,
 -- 	bar_height = 2, bar_width = 30,
@@ -99,58 +73,100 @@ end
 -- 		slider_drag = false
 -- 		server:change(slider.value - server.volume)
 -- end)
--- 
--- local volume_popup = awful.popup({
--- 	widget = {
--- 		widget = wibox.container.background,
--- 		bg = "#268f28",
--- 		{
--- 			widget = wibox.container.margin,
--- 			top = 10, bottom = 10, left = 15, right = 15,
--- 			{
--- 				layout = wibox.layout.fixed.vertical,
--- 				spacing = 5,
--- 				{
--- 					widget = wibox.widget.textbox,
--- 					text = "Volume",
--- 				},
--- 				{
--- 					layout = wibox.layout.fixed.horizontal,
--- 					spacing = 10,
--- 					slider,
--- 					text_label
--- 				}
--- 			}
--- 		}
--- 	},
--- 	shape = function(cr, w, h) gshape.rounded_rect(cr, w, h, 5) end,
--- 	placement = { },
--- 	ontop = true,
--- 	visible = false,
--- })
 
--- volume_popup.uid = 220
--- 
--- bar_wgt:buttons(
--- 	awful.button({ }, 1,
--- 	function()
--- 		Capi.awesome.emit_signal("popup_show", volume_popup.uid)
--- 	end)
--- )
--- 
--- Capi.awesome.connect_signal("popup_show", function(uid)
--- 	if uid == volume_popup.uid then
--- 		volume_popup.visible = not volume_popup.visible
--- 	else
--- 		volume_popup.visible = false
--- 	end
--- 	if not volume_popup.visible then return end
--- 	awful.placement.next_to(volume_popup, {
--- 		preferred_positions = { "bottom" },
--- 		preferred_anchors = { "middle" },
--- 		mode = "cursor_inside",
--- 		offset = { y = 5 },
--- 	})
--- end)
+local pulse_layout = wibox.layout.fixed.vertical()
+for i, sink in ipairs(sinks) do
+	local sink_menu = wibox.layout.fixed.horizontal()
+	sink_menu.spacing = 5
+	sink_menu:add(wibox.widget.textbox("Sink"..(i-1)))
+	local port_menu = wibox.layout.fixed.vertical()
+	for _, p_path in ipairs(sink.Ports) do
+		local port = pulse_dbus.get_port(connection, p_path)
+		local port_label = wibox.widget.textbox(port.Description)
+		port_label.path = p_path
+		port_menu:add(port_label)
+	end
+	sink_menu:add(port_menu)
+	pulse_layout:add(sink_menu)
+end
+
+function pulse_layout:update_active()
+	for i, s_menu in ipairs(self.children) do
+		local p_menu = s_menu.children[2].children
+		for _, p_label in ipairs(p_menu) do
+			if p_label.path == sinks[i]:get_active_port() then
+				p_label.text = p_label.text.."*"
+			else
+				p_label.text = p_label.text:match("(.-)%*?$")
+			end
+		end
+	end
+end
+pulse_layout:update_active()
+
+local function listen_device(device)
+	if device.signals.VolumeUpdated then
+		device:connect_signal(function(this, _)
+			bar_wgt_label.text = this:get_volume_percent()[1].."%"
+			pulse_layout:update_active()
+		end, "VolumeUpdated")
+	end
+	if device.signals.MuteUpdated then
+		device:connect_signal(function(this, is_mute)
+			if is_mute then
+				bar_wgt_label.text = "Muted"
+			else
+				bar_wgt_label.text = this:get_volume_percent()[1].."%"
+			end
+		end, "MuteUpdated")
+	end
+end
+
+for _, v in ipairs(sinks) do
+	listen_device(v)
+end
+for _, v in ipairs(sources) do
+	if v.Name and not v.Name:match("%.monitor$") then
+		listen_device(v)
+	end
+end
+
+local volume_popup = awful.popup({
+	widget = {
+		widget = wibox.container.background,
+		bg = "#268f28",
+		{
+			widget = wibox.container.margin,
+			top = 10, bottom = 10, left = 15, right = 15,
+			pulse_layout
+		}
+	},
+	shape = function(cr, w, h) gshape.rounded_rect(cr, w, h, 5) end,
+	placement = { },
+	ontop = true,
+	visible = false,
+})
+
+volume_popup.uid = 220
+
+bar_wgt:buttons(
+	awful.button({ }, 1,
+	function() Capi.awesome.emit_signal("popup_show", volume_popup.uid) end)
+)
+
+Capi.awesome.connect_signal("popup_show", function(uid)
+	if uid == volume_popup.uid then
+		volume_popup.visible = not volume_popup.visible
+	else
+		volume_popup.visible = false
+	end
+	if not volume_popup.visible then return end
+	awful.placement.next_to(volume_popup, {
+		preferred_positions = { "bottom" },
+		preferred_anchors = { "middle" },
+		mode = "cursor_inside",
+		offset = { y = 5 },
+	})
+end)
 
 return bar_wgt
