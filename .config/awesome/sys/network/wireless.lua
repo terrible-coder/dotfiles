@@ -1,6 +1,8 @@
 local naughty = require("naughty")
 local proxy = require("dbus_proxy")
 
+local enums = require(... .. ".enums")
+
 local NM_NAME  = "org.freedesktop.NetworkManager"
 local NM_PATH  = "/org/freedesktop/NetworkManager"
 local NM_IFACE = "org.freedesktop.NetworkManager"
@@ -113,22 +115,6 @@ setmetatable(api.Device, {
 	end
 })
 
-api.Device_State = {
-	UNKNOWN      =   0,
-	UNMANAGED    =  10,
-	UNAVAILABLE  =  20,
-	DISCONNECTED =  30,
-	PREPARE      =  40,
-	CONFIG       =  50,
-	NEED_AUTH    =  60,
-	IP_CONFIG    =  70,
-	IP_CHECK     =  80,
-	SECONDARIES  =  90,
-	ACTIVATED    = 100,
-	DEACTIVATING = 110,
-	FAILED       = 120,
-}
-
 -- It is "wlp3s0" for me. I am aware it maybe different for other systems but I
 -- do not know how to check for that yet.
 local wireless_path = nm_server:GetDeviceByIpIface("wlp3s0")
@@ -159,7 +145,7 @@ function api.Get_ActiveAccessPoint()
 end
 
 local function refresh_state()
-	if api.Device.State == api.Device_State.ACTIVATED then
+	if api.Device.State == enums.DeviceState.ACTIVATED then
 		api.Get_ActiveAccessPoint()
 		naughty.notify({
 			title = "Networking",
