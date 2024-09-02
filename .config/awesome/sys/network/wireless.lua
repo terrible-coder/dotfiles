@@ -158,6 +158,9 @@ setmetatable(api.Device, {
 function api.AccessPoint(path)
 	local AP_IFACE = NM_IFACE..".AccessPoint"
 	local ap_obj = api.object_from_path(path, AP_IFACE)
+	ap_obj:on_properties_changed(function(_, changed, _)
+		api.socket:emit_signal("AccessPoint::PropertiesChanged", changed)
+	end)
 	local ap = { }
 	setmetatable(ap, {
 		__index = function (_, k)
@@ -190,7 +193,7 @@ end
 
 api.socket = require("gears.object")({ class = {} })
 
-wireless:connect_signal(function (self, new_state, old_state, state_reason)
+wireless:connect_signal(function (_, new_state, old_state, state_reason)
 	api.socket:emit_signal("StateChanged", {
 		new = new_state, old = old_state, reason = state_reason
 	})

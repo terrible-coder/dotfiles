@@ -5,6 +5,7 @@ local wireless = require("sys.network.wireless")
 local net_enums = require("sys.network.enums")
 
 local wgt_label = wibox.widget.textbox("WiFi")
+local wgt_icon = wibox.widget.textbox("00")
 local bar_widget = wibox.widget({
 	widget = wibox.container.background,
 	bg = "#26288f",
@@ -12,10 +13,13 @@ local bar_widget = wibox.widget({
 	{
 		widget = wibox.container.margin,
 		top = 2, bottom = 2, left = 5, right = 5,
-		wgt_label
+		{
+			layout = wibox.layout.fixed.horizontal,
+			spacing = 2,
+			wgt_icon, wgt_label
+		}
 	}
 })
-
 
 wireless.socket:connect_signal("StateChanged", function(_, state)
 	if state.new == net_enums.DeviceState.UNKNOWN then
@@ -34,5 +38,15 @@ wireless.socket:connect_signal("StateChanged", function(_, state)
 		wgt_label.text = "new: "..state.new..", old: "..state.old..", reason: "..state.reason
 	end
 end)
+
+wireless.socket:connect_signal(
+	"AccessPoint::PropertiesChanged",
+	function(_, changed)
+		if changed.Strength then
+			wgt_icon.text = tostring(changed.Strength)
+		end
+	end
+)
+wireless.socket:emit_signal("StateChanged", {new=100, old=100, reason=0})
 
 return bar_widget
