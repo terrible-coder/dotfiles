@@ -1,8 +1,4 @@
-local naughty = require("naughty")
 local proxy = require("dbus_proxy")
-
-local curr_dir = (...):match("(.-)[^%.]+$")
-local enums = require(curr_dir..".enums")
 
 local NM_NAME  = "org.freedesktop.NetworkManager"
 local NM_PATH  = "/org/freedesktop/NetworkManager"
@@ -16,15 +12,19 @@ local nm_server = proxy.Proxy:new({
 })
 -- It is "wlp3s0" for me. I am aware it maybe different for other systems but I
 -- do not know how to check for that yet.
-local wireless_path = nm_server:GetDeviceByIpIface("wlp3s0")
+local wl_iface = "wlp3s0"
+local wireless_path = nm_server:GetDeviceByIpIface(wl_iface)
 if not wireless_path then
+	local naughty = require("naughty")
+	local err = "Could not find wireless device \"%s\". Is it connected?"
 	naughty.notify({
 		title = "Networking",
-		text = "Could not find wireless device \"wlp3s0\". Is it connected?",
+		text = err:format(wl_iface),
 		preset = naughty.config.presets.critical
 	})
+	return
 end
-naughty.notify({ title = "Networking", text = "Wireless dev: "..wireless_path, timeout = 0 })
+
 local wireless = proxy.Proxy:new({
 	bus = proxy.Bus.SYSTEM,
 	name = NM_NAME,
