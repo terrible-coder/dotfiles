@@ -41,7 +41,10 @@ end)
 
 wireless.socket:connect_signal(
 	"AccessPoint::PropertiesChanged",
-	function(_, changed)
+	function(_, path, changed)
+		if path ~= wireless.Device.ActiveAccessPoint then
+			return
+		end
 		if changed.Strength then
 			wgt_icon.text = tostring(changed.Strength)
 		end

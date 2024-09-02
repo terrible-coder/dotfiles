@@ -155,12 +155,14 @@ setmetatable(api.Device, {
 	end
 })
 
-function api.AccessPoint(path)
+function api.AccessPoint(path, dont_listen)
 	local AP_IFACE = NM_IFACE..".AccessPoint"
 	local ap_obj = api.object_from_path(path, AP_IFACE)
-	ap_obj:on_properties_changed(function(_, changed, _)
-		api.socket:emit_signal("AccessPoint::PropertiesChanged", changed)
-	end)
+	if not dont_listen then
+		ap_obj:on_properties_changed(function(_, changed, _)
+			api.socket:emit_signal("AccessPoint::PropertiesChanged", path, changed)
+		end)
+	end
 	local ap = { }
 	setmetatable(ap, {
 		__index = function (_, k)
