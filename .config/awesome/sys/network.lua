@@ -59,7 +59,7 @@ function api.Get_ActiveAccessPoint(wireless)
 end
 
 local function refresh_state()
-	if api.device:Get(NM_IFACE..".Device", "State") == 100 then
+	if api.device:Get(NM_IFACE..".Device", "State") == api.Device_State.ACTIVATED then
 		api.Get_ActiveAccessPoint(api.device)
 		naughty.notify({
 			title = "Networking",
@@ -67,10 +67,17 @@ local function refresh_state()
 		})
 	else
 		api.active_ap = nil
-		naughty.notify({
-			title = "Networking",
-			text = "WiFi off"
-		})
+		if nm_server:Get(NM_IFACE, "WirelessEnabled") then
+			naughty.notify({
+				title = "Networking",
+				text = "Disconnected",
+			})
+		else
+			naughty.notify({
+				title = "Networking",
+				text = "WiFi off"
+			})
+		end
 	end
 end
 refresh_state()
