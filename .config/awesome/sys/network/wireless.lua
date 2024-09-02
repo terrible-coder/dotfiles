@@ -66,7 +66,13 @@ setmetatable(api, {
 		then
 			return nm_server:Get(NM_IFACE, k)
 		end
-		return nil
+		local value = nm_server[k]
+		if type(value) == "function" then
+			return function (...)
+				return value(nm_server, ...)
+			end
+		end
+		return value
 	end
 })
 
@@ -130,6 +136,13 @@ setmetatable(api.Device, {
 		then
 			return wireless:Get(NM_IFACE..".Device.Wireless", k)
 		end
+		local value = wireless[k]
+		if type(value) == "function" then
+			return function (...)
+				return value(wireless, ...)
+			end
+		end
+		return value
 	end
 })
 
