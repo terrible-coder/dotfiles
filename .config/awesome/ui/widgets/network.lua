@@ -4,6 +4,13 @@ local gshape = require("gears.shape")
 local wireless = require("sys.network.wireless")
 local net_enums = require("sys.network.enums")
 
+local icons = {
+	"󰤟",
+	"󰤢",
+	"󰤥",
+	"󰤨",
+}
+
 local wgt_label = wibox.widget.textbox("WiFi")
 local wgt_icon = wibox.widget.textbox("00")
 local bar_widget = wibox.widget({
@@ -15,7 +22,7 @@ local bar_widget = wibox.widget({
 		top = 2, bottom = 2, left = 5, right = 5,
 		{
 			layout = wibox.layout.fixed.horizontal,
-			spacing = 2,
+			spacing = 5,
 			wgt_icon, wgt_label
 		}
 	}
@@ -39,6 +46,8 @@ wireless.socket:connect_signal("StateChanged", function(_, state)
 	end
 end)
 
+local _last_level = 0
+
 wireless.socket:connect_signal(
 	"AccessPoint::PropertiesChanged",
 	function(_, path, changed)
@@ -46,7 +55,16 @@ wireless.socket:connect_signal(
 			return
 		end
 		if changed.Strength then
-			wgt_icon.text = tostring(changed.Strength)
+			local level = 0
+			if changed.Strength > 75 then level = 4
+			elseif changed.Strength > 50 then level = 3
+			elseif changed.Strength > 25 then level = 2
+			else level = 1
+			end
+			if level ~= _last_level then
+				_last_level = level
+				wgt_icon.text = icons[level]
+			end
 		end
 	end
 )
