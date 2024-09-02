@@ -34,6 +34,15 @@ local wireless = proxy.Proxy:new({
 
 local api = { }
 
+function api.object_from_path(path, interface)
+	return proxy.Proxy:new({
+		bus = proxy.Bus.SYSTEM,
+		name = NM_NAME,
+		path = path,
+		interface = interface
+	})
+end
+
 setmetatable(api, {
 	__index = function (_, k)
 		if
@@ -146,49 +155,42 @@ setmetatable(api.Device, {
 	end
 })
 
-function api.Get_ActiveAccessPoint()
-	local active_ap_path = api.Device.ActiveAccessPoint
-	naughty.notify({ title = "Networking", text = "Active AP: "..active_ap_path })
-	api.active_ap = proxy.Proxy:new({
-		bus = proxy.Bus.SYSTEM,
-		name = NM_NAME,
-		path = active_ap_path,
-		interface = NM_IFACE..".AccessPoint"
-	})
-end
-
-local function refresh_state()
-	if api.Device.State == enums.DeviceState.ACTIVATED then
-		api.Get_ActiveAccessPoint()
-		naughty.notify({
-			title = "Networking",
-			text = "Current AP: "..string.char(table.unpack(api.active_ap.Ssid))
-		})
-	else
-		api.active_ap = nil
-		if api.WirelessEnabled then
-			naughty.notify({
-				title = "Networking",
-				text = "Disconnected",
-			})
-		else
-			naughty.notify({
-				title = "Networking",
-				text = "WiFi off"
-			})
+function api.AccessPoint(path)
+	local AP_IFACE = NM_IFACE..".AccessPoint"
+	local ap_obj = api.object_from_path(path, AP_IFACE)
+	local ap = { }
+	setmetatable(ap, {
+		__index = function (_, k)
+			if
+				k == "Flags" or
+				k == "WpaFlags" or
+				k == "RsnFlags" or
+				k == "Ssid" or
+				k == "Frequency" or
+				k == "HwAddress" or
+				k == "Mode" or
+				k == "MaxBitrate" or
+				k == "Bandwidth" or
+				k == "Strength" or
+				k == "LastSeen"
+			then
+				return ap_obj:Get(AP_IFACE, k)
+			end
+			local value = wireless[k]
+			if type(value) == "function" then
+				return function (...)
+					return value(ap_obj, ...)
+				end
+			end
+			return value
 		end
-	end
+	})
+	return ap
 end
-refresh_state()
 
 api.socket = require("gears.object")({ class = {} })
 
 wireless:connect_signal(function (self, new_state, old_state, state_reason)
-	naughty.notify({
-		title = "Networking signal",
-		text = "State! New: "..new_state..", Old: "..old_state..", Reason: "..state_reason
-	})
-	refresh_state()
 	api.socket:emit_signal("StateChanged", {
 		new = new_state, old = old_state, reason = state_reason
 	})

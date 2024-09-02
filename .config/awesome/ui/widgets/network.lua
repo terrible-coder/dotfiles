@@ -16,9 +16,20 @@ local bar_widget = wibox.widget({
 	}
 })
 
+
 wireless.socket:connect_signal("StateChanged", function(_, state)
-	if state.new == net_enums.DeviceState.ACTIVATED then
-		wgt_label.text = string.char(table.unpack(wireless.active_ap.Ssid))
+	if state.new == net_enums.DeviceState.UNKNOWN then
+		wgt_label.text = "??"
+	elseif state.new == net_enums.DeviceState.UNAVAILABLE then
+		wgt_label.text = "WiFi off"
+	elseif state.new == net_enums.DeviceState.DISCONNECTED then
+		wgt_label.text = "Disconnected"
+	elseif state.new >= net_enums.DeviceState.PREPARE and
+		     state.new <= net_enums.DeviceState.SECONDARIES then
+		wgt_label.text = "Connecting..."
+	elseif state.new == net_enums.DeviceState.ACTIVATED then
+		local ap_inuse = wireless.AccessPoint(wireless.Device.ActiveAccessPoint)
+		wgt_label.text = string.char(table.unpack(ap_inuse.Ssid))
 	else
 		wgt_label.text = "new: "..state.new..", old: "..state.old..", reason: "..state.reason
 	end
