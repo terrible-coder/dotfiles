@@ -181,12 +181,17 @@ local function refresh_state()
 end
 refresh_state()
 
+api.socket = require("gears.object")({ class = {} })
+
 wireless:connect_signal(function (self, new_state, old_state, state_reason)
 	naughty.notify({
 		title = "Networking signal",
 		text = "State! New: "..new_state..", Old: "..old_state..", Reason: "..state_reason
 	})
 	refresh_state()
+	api.socket:emit_signal("StateChanged", {
+		new = new_state, old = old_state, reason = state_reason
+	})
 end, "StateChanged")
 
 return api

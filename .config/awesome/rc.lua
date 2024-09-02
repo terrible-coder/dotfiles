@@ -75,8 +75,6 @@ awful.screen.connect_for_each_screen(function(s)
 end)
 -- }}}
 
-require("sys.network")
-
 local binds = require("binds")
 root.keys(binds.global.keys)
 root.buttons(binds.global.buttons)
