@@ -50,6 +50,8 @@ wireless.socket:connect_signal(
 		end
 	end
 )
-wireless.socket:emit_signal("StateChanged", {new=100, old=100, reason=0})
+wireless.socket:emit_signal("StateChanged", {
+	new = wireless.Device.State, old = 0, reason = 0
+})
 
 return bar_widget
