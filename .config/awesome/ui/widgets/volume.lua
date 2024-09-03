@@ -22,7 +22,7 @@ end
 core:ListenForSignal("org.PulseAudio.Core1.Device.VolumeUpdated", { })
 core:ListenForSignal("org.PulseAudio.Core1.Device.MuteUpdated", { })
 
-local bar_wgt_label = wibox.widget.textbox(sinks[1]:get_volume_percent()[1].."%")
+local bar_wgt_label = wibox.widget.textbox(tostring(sinks[1]:get_volume_percent()[1]))
 
 local bar_wgt = wibox.widget({
 	widget = wibox.container.background,

@@ -114,7 +114,7 @@ end)
 
 server:connect_signal("backlight::update", function(self)
 	slider.value = self.level
-	bar_wgt_label.text = self.level.."%"
+	bar_wgt_label.text = self.level
 end)
 
 return bar_wgt

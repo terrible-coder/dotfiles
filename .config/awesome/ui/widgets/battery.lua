@@ -78,7 +78,7 @@ Capi.awesome.connect_signal("popup_show", function(uid)
 end)
 
 server:connect_signal("battery::update", function(self)
-	text_label.text = self.level.."%"
+	text_label.text = self.level
 	popup_level.text = self.level.."%"
 	popup_waiting.text = self.waiting
 	local health_indicator = ""
