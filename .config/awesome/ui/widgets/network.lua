@@ -6,13 +6,19 @@ local wireless = require("sys.network.wireless")
 local net_enums = require("sys.network.enums")
 
 local icons = {
-	"󰤟",
-	"󰤢",
-	"󰤥",
-	"󰤨",
+	unknown = "󰤫",
+	unavailable = "󰤮",
+	disconnected = "󰤯",
+	connecting = "󱛏",
+	activated = {
+		"󰤟",
+		"󰤢",
+		"󰤥",
+		"󰤨",
+	}
 }
 
-local wgt_icon = wibox.widget.textbox("00")
+local wgt_icon = wibox.widget.textbox(icons.unavailable)
 local bar_widget = wibox.widget({
 	widget = wibox.container.background,
 	bg = "#26288f",
@@ -29,16 +35,21 @@ tooltip:add_to_object(bar_widget)
 
 wireless.socket:connect_signal("StateChanged", function(_, state)
 	if state.new == net_enums.DeviceState.UNKNOWN then
+		wgt_icon.text = icons.unknown
 		tooltip.text = "??"
 	elseif state.new == net_enums.DeviceState.UNAVAILABLE then
+		wgt_icon.text = icons.unavailable
 		tooltip.text = "WiFi off"
 	elseif state.new == net_enums.DeviceState.DISCONNECTED then
+		wgt_icon.text = icons.disconnected
 		tooltip.text = "Disconnected"
 	elseif state.new >= net_enums.DeviceState.PREPARE and
 		     state.new <= net_enums.DeviceState.SECONDARIES then
+		wgt_icon.text = icons.connecting
 		tooltip.text = "Connecting..."
 	elseif state.new == net_enums.DeviceState.ACTIVATED then
 		local ap_inuse = wireless.AccessPoint(wireless.Device.ActiveAccessPoint)
+		wgt_icon.text = icons.activated[1]
 		tooltip.text = string.char(table.unpack(ap_inuse.Ssid))
 	else
 		tooltip.text = "new: "..state.new..", old: "..state.old..", reason: "..state.reason
@@ -62,7 +73,7 @@ wireless.socket:connect_signal(
 			end
 			if level ~= _last_level then
 				_last_level = level
-				wgt_icon.text = icons[level]
+				wgt_icon.text = icons.activated[level]
 			end
 		end
 	end
