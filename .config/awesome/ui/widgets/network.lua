@@ -1,132 +1,75 @@
-local Capi = {
-	awesome = awesome,
-}
-local awful = require("awful")
-local gshape = require("gears.shape")
-local gtimer = require("gears.timer")
 local wibox = require("wibox")
+local gshape = require("gears.shape")
 
-local server = require("sys.network")
+local wireless = require("sys.network.wireless")
+local net_enums = require("sys.network.enums")
 
-local bar_wgt_label = wibox.widget.textbox("Wi-fi off")
-bar_wgt_label.visible = false
+local icons = {
+	"󰤟",
+	"󰤢",
+	"󰤥",
+	"󰤨",
+}
 
-local bar_wgt = wibox.widget({
+local wgt_label = wibox.widget.textbox("WiFi")
+local wgt_icon = wibox.widget.textbox("00")
+local bar_widget = wibox.widget({
 	widget = wibox.container.background,
 	bg = "#26288f",
 	shape = function(cr, w, h) gshape.rounded_rect(cr, w, h, 2) end,
 	{
 		widget = wibox.container.margin,
-		left = 5, right = 5, top = 2, bottom = 2,
+		top = 2, bottom = 2, left = 5, right = 5,
 		{
 			layout = wibox.layout.fixed.horizontal,
 			spacing = 5,
-			{
-				widget = wibox.widget.textbox,
-				id = "icon",
-				text = "",
-			},
-			bar_wgt_label,
+			wgt_icon, wgt_label
 		}
 	}
 })
 
-local ssid_label = wibox.widget.textbox("ssid")
-local speed_label = wibox.widget({
-	widget = wibox.container.background,
-	{
-		layout = wibox.layout.flex.horizontal,
-		spacing = 5,
-		{
-			widget = wibox.widget.textbox,
-			id = "up_speed",
-			text = "00",
-		},
-		{
-			widget = wibox.widget.textbox,
-			id = "down_speed",
-			text = "00",
-		},
-	}
-})
-
-local net_popup = awful.popup({
-	widget = {
-		widget = wibox.container.background,
-		bg = "#268f28",
-		{
-			widget = wibox.container.margin,
-			margins = 5,
-			{
-				layout = wibox.layout.flex.vertical,
-				spacing = 5,
-				{
-					widget = wibox.container.margin,
-					margins = 20,
-					ssid_label,
-				},
-				{
-					widget = wibox.container.margin,
-					margins = 20,
-					speed_label,
-				}
-			}
-		}
-	},
-	shape = function(cr, w, h) gshape.rounded_rect(cr, w, h, 5) end,
-	placement = { },
-	ontop = true,
-	visible = false,
-})
-
-net_popup.uid = 140
-
-bar_wgt:buttons(
-	awful.button({ }, 1,
-	function()
-		Capi.awesome.emit_signal("popup_show", net_popup.uid)
-	end)
-)
-
-Capi.awesome.connect_signal("popup_show", function(uid)
-	if uid == net_popup.uid then
-		net_popup.visible = not net_popup.visible
+wireless.socket:connect_signal("StateChanged", function(_, state)
+	if state.new == net_enums.DeviceState.UNKNOWN then
+		wgt_label.text = "??"
+	elseif state.new == net_enums.DeviceState.UNAVAILABLE then
+		wgt_label.text = "WiFi off"
+	elseif state.new == net_enums.DeviceState.DISCONNECTED then
+		wgt_label.text = "Disconnected"
+	elseif state.new >= net_enums.DeviceState.PREPARE and
+		     state.new <= net_enums.DeviceState.SECONDARIES then
+		wgt_label.text = "Connecting..."
+	elseif state.new == net_enums.DeviceState.ACTIVATED then
+		local ap_inuse = wireless.AccessPoint(wireless.Device.ActiveAccessPoint)
+		wgt_label.text = string.char(table.unpack(ap_inuse.Ssid))
 	else
-		net_popup.visible = false
+		wgt_label.text = "new: "..state.new..", old: "..state.old..", reason: "..state.reason
 	end
-	if not net_popup.visible then return end
-	awful.placement.next_to(net_popup, {
-		preferred_positions = { "bottom" },
-		preferred_anchors = { "middle" },
-		mode = "cursor_inside",
-		offset = { y = 5 },
-	})
 end)
 
-server:connect_signal("network::update", function(self)
-	bar_wgt_label.visible = true
-	speed_label.visible = server.enabled
-	if server.enabled then
-		if self.connection then
-			ssid_label.text = self.ssid
-			bar_wgt_label.text = self.ssid
-		else
-			ssid_label.text = "Disconnected"
-			bar_wgt_label.text = "Disconnected"
-		end
-	else
-		ssid_label.text = "Wi-fi off"
-		bar_wgt_label.text = "Wi-fi off"
-	end
-	gtimer({
-		callback = function()
-			bar_wgt_label.visible = false
-		end,
-		single_shot = true,
-		call_now = false,
-		autostart = true,
-		timeout = 2,
-	})
-		end)
+local _last_level = 0
 
-return bar_wgt
+wireless.socket:connect_signal(
+	"AccessPoint::PropertiesChanged",
+	function(_, path, changed)
+		if path ~= wireless.Device.ActiveAccessPoint then
+			return
+		end
+		if changed.Strength then
+			local level = 0
+			if changed.Strength > 75 then level = 4
+			elseif changed.Strength > 50 then level = 3
+			elseif changed.Strength > 25 then level = 2
+			else level = 1
+			end
+			if level ~= _last_level then
+				_last_level = level
+				wgt_icon.text = icons[level]
+			end
+		end
+	end
+)
+wireless.socket:emit_signal("StateChanged", {
+	new = wireless.Device.State, old = 0, reason = 0
+})
+
+return bar_widget
