@@ -42,8 +42,17 @@ end
 
 local vars = require("config.vars")
 require("menubar").utils.terminal = vars.terminal
+
 -- Themes define colours, icons, font and wallpapers.
 beautiful.init(gears.filesystem.get_themes_dir() .. "default/theme.lua")
+beautiful.fonts = {
+	sans  = "Helvetica ",
+	serif = "Dejavu Serif ",
+	nerd = "Hack Nerd Font Mono ",
+	mono  = "mononoki ",
+	weather = "Weather Icons ",
+}
+beautiful.font = beautiful.fonts.sans..10
 
 -- Table of layouts to cover with awful.layout.inc, order matters.
 awful.layout.layouts = vars.layouts
