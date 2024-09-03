@@ -108,7 +108,7 @@ pulse_layout:update_active()
 local function listen_device(device)
 	if device.signals.VolumeUpdated then
 		device:connect_signal(function(this, _)
-			bar_wgt_label.text = this:get_volume_percent()[1].."%"
+			bar_wgt_label.text = this:get_volume_percent()[1]
 			pulse_layout:update_active()
 		end, "VolumeUpdated")
 	end
@@ -117,7 +117,7 @@ local function listen_device(device)
 			if is_mute then
 				bar_wgt_label.text = "Muted"
 			else
-				bar_wgt_label.text = this:get_volume_percent()[1].."%"
+				bar_wgt_label.text = this:get_volume_percent()[1]
 			end
 		end, "MuteUpdated")
 	end
