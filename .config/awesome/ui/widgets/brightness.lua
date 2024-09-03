@@ -3,13 +3,11 @@ local Capi = {
 }
 local awful = require("awful")
 local gshape = require("gears.shape")
-local gtimer = require("gears.timer")
 local wibox = require("wibox")
 
 local server = require("sys.backlight")
 
 local bar_wgt_label = wibox.widget.textbox("00")
-bar_wgt_label.visible = false
 
 local bar_wgt = wibox.widget({
 	widget = wibox.container.background,
@@ -117,16 +115,6 @@ end)
 server:connect_signal("backlight::update", function(self)
 	slider.value = self.level
 	bar_wgt_label.text = self.level.."%"
-	bar_wgt_label.visible = true
-	gtimer({
-		callback = function()
-			bar_wgt_label.visible = false
-		end,
-		single_shot = true,
-		call_now = false,
-		autostart = true,
-		timeout = 2,
-	})
 end)
 
 return bar_wgt
