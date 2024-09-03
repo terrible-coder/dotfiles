@@ -2,6 +2,7 @@ local Capi = {
 	awesome = awesome,
 }
 local awful = require("awful")
+local beautiful = require("beautiful")
 local gshape = require("gears.shape")
 local wibox = require("wibox")
 
@@ -20,8 +21,8 @@ local bar_wgt = wibox.widget({
 			layout = wibox.layout.fixed.horizontal,
 			spacing = 5,
 			{
-				widget = wibox.widget.textbox,
-				id = "icon",
+				widget = wibox.widget.textbox, id = "icon",
+				font = beautiful.fonts.nerd..16,
 				text = "󰃟",
 			},
 			bar_wgt_label,

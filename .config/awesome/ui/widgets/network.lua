@@ -1,4 +1,5 @@
 local awful = require("awful")
+local beautiful = require("beautiful")
 local wibox = require("wibox")
 local gshape = require("gears.shape")
 
@@ -19,6 +20,7 @@ local icons = {
 }
 
 local wgt_icon = wibox.widget.textbox(icons.unavailable)
+wgt_icon.font = beautiful.fonts.nerd..16
 local bar_widget = wibox.widget({
 	widget = wibox.container.background,
 	bg = "#26288f",

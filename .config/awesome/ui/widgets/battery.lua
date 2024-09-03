@@ -2,6 +2,7 @@ local Capi = {
 	awesome = awesome,
 }
 local awful = require("awful")
+local beautiful = require("beautiful")
 local gshape = require("gears.shape")
 local wibox = require("wibox")
 
@@ -9,6 +10,7 @@ local server = require("sys.battery")
 
 local text_label = wibox.widget.textbox("00")
 local icon_label = wibox.widget.textbox("")
+icon_label.font = beautiful.fonts.nerd..16
 
 local bar_wgt = wibox.widget({
 	widget = wibox.container.background,
