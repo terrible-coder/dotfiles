@@ -29,21 +29,53 @@ return function(s)
 		filter  = awful.widget.taglist.filter.all,
 		buttons = taglist_buttons,
 		style = { shape = function(cr, w, h) gshape.rounded_rect(cr, w, h, 2) end },
-		layout = {
-			layout = wibox.layout.flex.horizontal,
-			spacing = 2,
-		},
+		layout = wibox.layout.flex.horizontal,
 		widget_template = {
-			widget = wibox.container.background,
-			id = "background_role",
+			widget = wibox.container.margin,
+			forced_width = 20,
 			{
-				widget = wibox.container.margin,
-				left = 10, right = 10,
+				widget = wibox.container.background, id = "container",
+				fg = "#ffffff",
+				shape = function(cr, w, h) gshape.rounded_rect(cr, w, h, 2) end,
 				{
-					widget = wibox.widget.textbox,
-					id = "text_role",
-				},
+					widget = wibox.widget.textbox, id = "index",
+					align = "center", valign = "center",
+				}
 			},
-		}
+			create_callback = function(self, t, index, _)
+				local container = self:get_children_by_id("container")[1]
+				local indexer = self:get_children_by_id("index")[1]
+				if t.selected then
+					self.margins = 2
+					container.bg = "#00aab0"
+					indexer.text = tostring(index)
+				elseif #t:clients() == 0 then
+					self.margins = 8
+					container.bg = "#3f3f3f"
+					indexer.text = ""
+				else
+					self.margins = 3
+					container.bg = "#000000"
+					indexer.text = ""
+				end
+			end,
+			update_callback = function(self, t, index, _)
+				local container = self:get_children_by_id("container")[1]
+				local indexer = self:get_children_by_id("index")[1]
+				if t.selected then
+					self.margins = 2
+					container.bg = "#00aab0"
+					indexer.text = tostring(index)
+				elseif #t:clients() == 0 then
+					self.margins = 8
+					container.bg = "#3f3f3f"
+					indexer.text = ""
+				else
+					self.margins = 3
+					container.bg = "#000000"
+					indexer.text = ""
+				end
+			end,
+		},
 	})
 end
