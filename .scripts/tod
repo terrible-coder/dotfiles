@@ -1,0 +1,4 @@
+#!/bin/bash
+
+# This script simply outputs the time of day in the hh:mm format
+echo "## $(date +%H:%M)"
