@@ -79,8 +79,11 @@ theme.tooltip_border_color = theme.colors.iris
 -- menu_[bg|fg]_[normal|focus]
 -- menu_[border_color|border_width]
 theme.menu_submenu_icon = themes_path.."rosepine/submenu.png"
-theme.menu_height = dpi(15)
-theme.menu_width  = dpi(100)
+theme.menu_height = dpi(25)
+theme.menu_width  = dpi(150)
+theme.menu_border_width = dpi(2)
+theme.menu_border_color = theme.colors.iris
+theme.menu_bg_focus = theme.colors.iris
 
 -- You can add as many variables as
 -- you wish and access them by using
