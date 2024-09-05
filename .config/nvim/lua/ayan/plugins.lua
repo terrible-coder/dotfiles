@@ -8,7 +8,8 @@ return require("lazy").setup({
 	  }
 	},
 	-- colour scheme
-	{ "Mofiqul/dracula.nvim" },
+	-- { "Mofiqul/dracula.nvim" },
+	{ "rose-pine/neovim", name = "rose-pine" },
 	{
 		"nvim-lualine/lualine.nvim",
 		dependencies = {

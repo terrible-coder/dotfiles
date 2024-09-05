@@ -1,7 +1,7 @@
 -- vim.opt.guicursor = ""
 vim.g.vim_markdown_conceal = 2
 vim.opt.conceallevel = 2
-vim.cmd("colorscheme dracula")
+vim.cmd("colorscheme rose-pine")
 
 -- vim.opt.textwidth = 80
 vim.opt.tabstop = 2
