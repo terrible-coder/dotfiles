@@ -39,15 +39,15 @@ theme.border_focus  = theme.colors.rose
 theme.border_marked = theme.colors.pine
 
 theme.taglist_bg          = theme.colors.surface
-theme.taglist_bg_focus    = theme.colors.pine
-theme.taglist_bg_urgent   = theme.colors.love
-theme.taglist_bg_occupied = theme.colors.rose
+theme.taglist_bg_focus    = theme.colors.rose
+theme.taglist_bg_urgent   = theme.colors.gold
+theme.taglist_bg_occupied = theme.colors.subtle
 theme.taglist_bg_empty    = theme.colors.muted
 
-theme.taglist_fg          = theme.colors.text
-theme.taglist_fg_focus    = theme.colors.hl_med
-theme.taglist_fg_urgent   = theme.colors.gold
-theme.taglist_fg_occupied = theme.colors.text
+theme.taglist_fg          = theme.colors.surface
+theme.taglist_fg_focus    = theme.colors.surface
+-- theme.taglist_fg_urgent   = theme.colors.gold
+-- theme.taglist_fg_occupied = theme.colors.text
 -- theme.taglist_fg_empty    = theme.colors.muted
 
 theme.tooltip_bg = theme.colors.overlay

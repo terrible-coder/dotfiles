@@ -2,6 +2,8 @@ local Capi = {
 	client = client
 }
 local awful = require("awful")
+local beautiful = require("beautiful")
+local dpi = beautiful.xresources.apply_dpi
 local gtable = require("gears.table")
 local gshape = require("gears.shape")
 local wibox = require("wibox")
@@ -32,9 +34,10 @@ return function(s)
 		layout = wibox.layout.flex.horizontal,
 		widget_template = {
 			widget = wibox.container.margin,
-			forced_width = 20,
+			forced_width = dpi(25),
 			{
 				widget = wibox.container.background, id = "background_role",
+				fg = beautiful.colors.surface,
 				shape = function(cr, w, h) gshape.rounded_rect(cr, w, h, 2) end,
 				{
 					widget = wibox.widget.textbox, id = "index_role",
@@ -44,26 +47,26 @@ return function(s)
 			create_callback = function(self, t, index, _)
 				local indexer = self:get_children_by_id("index_role")[1]
 				if t.selected then
-					self.margins = 2
+					self.margins = dpi(2)
 					indexer.text = tostring(index)
 				elseif #t:clients() == 0 then
-					self.margins = 8
+					self.margins = dpi(8)
 					indexer.text = ""
 				else
-					self.margins = 3
+					self.margins = dpi(4)
 					indexer.text = ""
 				end
 			end,
 			update_callback = function(self, t, index, _)
 				local indexer = self:get_children_by_id("index_role")[1]
 				if t.selected then
-					self.margins = 2
+					self.margins = dpi(2)
 					indexer.text = tostring(index)
 				elseif #t:clients() == 0 then
-					self.margins = 8
+					self.margins = dpi(8)
 					indexer.text = ""
 				else
-					self.margins = 3
+					self.margins = dpi(4)
 					indexer.text = ""
 				end
 			end,
