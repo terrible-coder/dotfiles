@@ -34,45 +34,36 @@ return function(s)
 			widget = wibox.container.margin,
 			forced_width = 20,
 			{
-				widget = wibox.container.background, id = "container",
-				fg = "#ffffff",
+				widget = wibox.container.background, id = "background_role",
 				shape = function(cr, w, h) gshape.rounded_rect(cr, w, h, 2) end,
 				{
-					widget = wibox.widget.textbox, id = "index",
+					widget = wibox.widget.textbox, id = "index_role",
 					align = "center", valign = "center",
 				}
 			},
 			create_callback = function(self, t, index, _)
-				local container = self:get_children_by_id("container")[1]
-				local indexer = self:get_children_by_id("index")[1]
+				local indexer = self:get_children_by_id("index_role")[1]
 				if t.selected then
 					self.margins = 2
-					container.bg = "#00aab0"
 					indexer.text = tostring(index)
 				elseif #t:clients() == 0 then
 					self.margins = 8
-					container.bg = "#3f3f3f"
 					indexer.text = ""
 				else
 					self.margins = 3
-					container.bg = "#000000"
 					indexer.text = ""
 				end
 			end,
 			update_callback = function(self, t, index, _)
-				local container = self:get_children_by_id("container")[1]
-				local indexer = self:get_children_by_id("index")[1]
+				local indexer = self:get_children_by_id("index_role")[1]
 				if t.selected then
 					self.margins = 2
-					container.bg = "#00aab0"
 					indexer.text = tostring(index)
 				elseif #t:clients() == 0 then
 					self.margins = 8
-					container.bg = "#3f3f3f"
 					indexer.text = ""
 				else
 					self.margins = 3
-					container.bg = "#000000"
 					indexer.text = ""
 				end
 			end,
