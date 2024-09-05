@@ -3,6 +3,7 @@ local Capi = {
 }
 local awful = require("awful")
 local beautiful = require("beautiful")
+local dpi = beautiful.xresources.apply_dpi
 local gshape = require("gears.shape")
 local wibox = require("wibox")
 
@@ -14,7 +15,7 @@ icon_label.font = beautiful.fonts.nerd..16
 
 local bar_wgt = wibox.widget({
 	widget = wibox.container.background,
-	bg = "#26288f",
+	fg = beautiful.colors.text, bg = beautiful.colors.pine,
 	shape = function(cr, w, h) gshape.rounded_rect(cr, w, h, 2) end,
 	{
 		widget = wibox.container.margin,
@@ -34,7 +35,7 @@ local popup_health = wibox.widget.textbox("00")
 local battery_popup = awful.popup({
 	widget = {
 		widget = wibox.container.background,
-		bg = "#268f28",
+		bg = beautiful.colors.overlay,
 		{
 			widget = wibox.container.margin,
 			margins = 10,
@@ -50,6 +51,8 @@ local battery_popup = awful.popup({
 		}
 	},
 	shape = function(cr, w, h) gshape.rounded_rect(cr, w, h, 5) end,
+	border_width = dpi(2),
+	border_color = beautiful.colors.iris,
 	placement = { },
 	ontop = true,
 	visible = false

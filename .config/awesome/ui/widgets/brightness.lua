@@ -3,6 +3,7 @@ local Capi = {
 }
 local awful = require("awful")
 local beautiful = require("beautiful")
+local dpi = beautiful.xresources.apply_dpi
 local gshape = require("gears.shape")
 local wibox = require("wibox")
 
@@ -12,7 +13,7 @@ local bar_wgt_label = wibox.widget.textbox("00")
 
 local bar_wgt = wibox.widget({
 	widget = wibox.container.background,
-	bg = "#26288f",
+	fg = beautiful.colors.hl_low, bg = beautiful.colors.foam,
 	shape = function(cr, w, h) gshape.rounded_rect(cr, w, h, 2) end,
 	{
 		widget = wibox.container.margin,
@@ -63,7 +64,7 @@ end)
 local brightness_popup = awful.popup({
 	widget = {
 		widget = wibox.container.background,
-		bg = "#268f28",
+		bg = beautiful.colors.overlay,
 		{
 			widget = wibox.container.margin,
 			top = 10, bottom = 10, left = 15, right = 15,
@@ -84,6 +85,8 @@ local brightness_popup = awful.popup({
 		}
 	},
 	shape = function(cr, w, h) gshape.rounded_rect(cr, w, h, 5) end,
+	border_width = dpi(2),
+	border_color = beautiful.colors.iris,
 	placement = { },
 	ontop = true,
 	visible = false,
