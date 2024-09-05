@@ -44,7 +44,9 @@ local vars = require("config.vars")
 require("menubar").utils.terminal = vars.terminal
 
 -- Themes define colours, icons, font and wallpapers.
-beautiful.init(gears.filesystem.get_themes_dir() .. "default/theme.lua")
+rawset(awesome,
+	"themes_path", gears.filesystem.get_xdg_config_home().."awesome/themes")
+beautiful.init(gears.filesystem.get_themes_dir().."rosepine/theme.lua")
 beautiful.fonts = {
 	sans  = "Helvetica ",
 	serif = "Dejavu Serif ",
