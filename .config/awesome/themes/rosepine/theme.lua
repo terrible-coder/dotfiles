@@ -7,6 +7,7 @@ local xresources = require("beautiful.xresources")
 local dpi = xresources.apply_dpi
 
 local gfs = require("gears.filesystem")
+local gshape = require("gears.shape")
 local themes_path = gfs.get_themes_dir()
 
 local theme = { }
@@ -48,6 +49,12 @@ theme.taglist_fg_focus    = theme.colors.hl_med
 theme.taglist_fg_urgent   = theme.colors.gold
 theme.taglist_fg_occupied = theme.colors.text
 -- theme.taglist_fg_empty    = theme.colors.muted
+
+theme.tooltip_bg = theme.colors.overlay
+theme.tooltip_fg = theme.colors.text
+theme.tooltip_shape = function(cr, w, h) gshape.rounded_rect(cr, w, h, 2) end
+theme.tooltip_border_width = dpi(2)
+theme.tooltip_border_color = theme.colors.iris
 
 -- There are other variable sets
 -- overriding the default one when
