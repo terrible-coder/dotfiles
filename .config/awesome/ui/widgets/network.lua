@@ -23,7 +23,7 @@ local wgt_icon = wibox.widget.textbox(icons.unavailable)
 wgt_icon.font = beautiful.fonts.nerd..16
 local bar_widget = wibox.widget({
 	widget = wibox.container.background,
-	fg = beautiful.colors.hl_low, bg = beautiful.colors.gold,
+	fg = beautiful.colors.hl_low, bg = beautiful.colors.foam,
 	shape = function(cr, w, h) gshape.rounded_rect(cr, w, h, 2) end,
 	{
 		widget = wibox.container.margin,
