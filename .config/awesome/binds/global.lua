@@ -7,7 +7,6 @@ local hotkeys_popup = require("awful.hotkeys_popup")
 local gears = require("gears")
 
 local vars = require("config.vars")
-local sound = require("sys.sound")
 local blight = require("sys.backlight")
 local menu = require("ui.menu")
 local modkey = vars.modkey
@@ -234,9 +233,15 @@ local global_buttons = gears.table.join(
 )
 
 global_keys = gears.table.join(global_keys,
-	awful.key({ }, "XF86AudioMute", function() sound:toggle_mute() end),
-	awful.key({ }, "XF86AudioLowerVolume", function() sound:change(-5) end),
-	awful.key({ }, "XF86AudioRaiseVolume", function() sound:change( 5) end),
+	awful.key({ }, "XF86AudioMute", function()
+		awful.spawn("pactl set-sink-mute @DEFAULT_SINK@ toggle")
+	end),
+	awful.key({ }, "XF86AudioLowerVolume", function()
+		awful.spawn("pactl set-sink-volume @DEFAULT_SINK@ -5%")
+	end),
+	awful.key({ }, "XF86AudioRaiseVolume", function()
+		awful.spawn("pactl set-sink-volume @DEFAULT_SINK@ +5%")
+	end),
 	awful.key({ }, "XF86MonBrightnessDown", function() blight:change(-5) end),
 	awful.key({ }, "XF86MonBrightnessUp", function() blight:change( 5) end)
 )
