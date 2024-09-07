@@ -5,13 +5,28 @@ local awful = require("awful")
 local beautiful = require("beautiful")
 local dpi = beautiful.xresources.apply_dpi
 local gshape = require("gears.shape")
+local gmath = require("gears.math")
 local wibox = require("wibox")
 
 local server = require("sys.battery")
 
+local icons = {
+	"󰂎",
+	"󰁺",
+	"󰁻",
+	"󰁼",
+	"󰁽",
+	"󰁾",
+	"󰁿",
+	"󰂀",
+	"󰂁",
+	"󰂂",
+	"󰁹",
+}
+
 local text_label = wibox.widget.textbox("00")
 local icon_label = wibox.widget.textbox("")
-icon_label.font = beautiful.fonts.nerd..16
+icon_label.font = beautiful.fonts.nerd..10
 
 local bar_wgt = wibox.widget({
 	layout = wibox.layout.fixed.horizontal,
@@ -96,10 +111,16 @@ Capi.awesome.connect_signal("popup_show", function(uid)
 	})
 end)
 
+local _last_icon_level = 0
 server:connect_signal("battery::update", function(self)
 	text_label.text = self.level
 	popup_level.text = self.level.."%"
 	popup_waiting.text = self.waiting
+	local icon_level = gmath.round(self.level / 10) + 1
+	if icon_level ~= _last_icon_level then
+		_last_icon_level = icon_level
+		icon_label.text = icons[icon_level]
+	end
 	local health_indicator = ""
 	if self.health > 80 then
 		health_indicator = "  "
