@@ -23,19 +23,18 @@ local core = proxy.Proxy:new({
 	interface = "org.PulseAudio.Core1"
 })
 
-naughty.notify({
-	title = "sound server",
-	text = "Core: "..core.object_path
-})
+local api = { }
 
-local sound = {
-	mute = false,
-	volume = 0,
-}
+function api.object_from_path(path, interface)
+	return proxy.Proxy:new({
+		bus = connection,
+		name = nil,
+		path = path,
+		interface = interface,
+	})
+end
 
-sound = gobject({ class = sound })
-
-function sound:change(delta)
+function api:change(delta)
 	-- if delta == 0 then return end
 	-- local volume = self.volume + delta
 	-- if volume < 0 or volume > 100 then return end
@@ -47,9 +46,11 @@ function sound:change(delta)
 	-- self.volume = volume
 end
 
-function sound:toggle_mute()
+function api:toggle_mute()
 	aspawn("pactl set-sink-mute @DEFAULT_SINK@ toggle")
 	-- self.mute = not self.mute
 end
 
-return sound
+api.socket = gobject({ class = {} })
+
+return api
