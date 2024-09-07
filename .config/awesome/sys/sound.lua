@@ -170,23 +170,6 @@ function api.DevicePort(path)
 	return devport
 end
 
-function api:change(delta)
-	-- if delta == 0 then return end
-	-- local volume = self.volume + delta
-	-- if volume < 0 or volume > 100 then return end
-	if delta < 0 then
-		aspawn("pactl set-sink-volume @DEFAULT_SINK@ "..delta.."%")
-	else
-		aspawn("pactl set-sink-volume @DEFAULT_SINK@ +"..delta.."%")
-	end
-	-- self.volume = volume
-end
-
-function api:toggle_mute()
-	aspawn("pactl set-sink-mute @DEFAULT_SINK@ toggle")
-	-- self.mute = not self.mute
-end
-
 api.socket = gobject({ class = {} })
 
 return api
