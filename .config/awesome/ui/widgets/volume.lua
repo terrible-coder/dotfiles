@@ -25,22 +25,33 @@ core:ListenForSignal("org.PulseAudio.Core1.Device.VolumeUpdated", { })
 core:ListenForSignal("org.PulseAudio.Core1.Device.MuteUpdated", { })
 
 local bar_wgt_label = wibox.widget.textbox(tostring(sinks[1]:get_volume_percent()[1]))
+local bar_wgt_icon = wibox.widget.textbox("")
+bar_wgt_icon.font = beautiful.fonts.nerd..16
 
 local bar_wgt = wibox.widget({
-	widget = wibox.container.background,
-	fg = beautiful.colors.hl_low, bg = beautiful.colors.foam,
-	shape = function(cr, w, h) gshape.rounded_rect(cr, w, h, 2) end,
+	layout = wibox.layout.fixed.horizontal,
+	-- spacing = 5,
 	{
-		widget = wibox.container.margin,
-		left = 5, right = 5, top = 2, bottom = 2,
+		widget = wibox.container.background,
+		shape = function(cr, w, h)
+			gshape.partially_rounded_rect(cr, w, h, true, false, false, true, dpi(2))
+		end,
+		fg = beautiful.colors.hl_low, bg = beautiful.colors.foam,
 		{
-			layout = wibox.layout.fixed.horizontal,
-			spacing = 5,
-			{
-				widget = wibox.widget.textbox, id = "icon",
-				font = beautiful.fonts.nerd..16,
-				text = "",
-			},
+			widget = wibox.container.margin,
+			left = dpi(5), right = dpi(5), top = dpi(2), bottom = dpi(2),
+			bar_wgt_icon,
+		}
+	},
+	{
+		widget = wibox.container.background,
+		bg = beautiful.colors.hl_low,
+		shape = function(cr, w, h)
+			gshape.partially_rounded_rect(cr, w, h, false, true, true, false, dpi(2))
+		end,
+		{
+			widget = wibox.container.margin,
+			left = dpi(10), right = dpi(5),
 			bar_wgt_label,
 		}
 	}
