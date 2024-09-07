@@ -1,6 +1,7 @@
 local awful = require("awful")
 local wibox = require("wibox")
 local beautiful = require("beautiful")
+local dpi = beautiful.xresources.apply_dpi
 
 -- local keyboardlayout = awful.widget.keyboardlayout()
 local textclock = wibox.widget.textclock("%H:%M")
@@ -23,17 +24,23 @@ local separator = wibox.widget({
 return function(s)
 	local promptbox = awful.widget.prompt()
 	s.promptbox = promptbox -- i did not want to do this but too much work to fix
-	local master_bar = awful.wibar({ position = "top", screen = s })
-	master_bar:setup {
-		layout = wibox.layout.align.horizontal,
-		expand = "none",
-		{ -- Left widgets
-			layout = wibox.layout.fixed.horizontal,
-			spacing = 10,
-			launcher,
-			tasklist(s), -- Middle widget
-			promptbox,
-		},
+	local master_bar = awful.wibar({
+		position = "top", screen = s,
+		height = dpi(25),
+	})
+	master_bar:setup({
+		widget = wibox.container.margin,
+		margins = dpi(2),
+		{
+			layout = wibox.layout.align.horizontal,
+			expand = "none",
+			{ -- Left widgets
+				layout = wibox.layout.fixed.horizontal,
+				spacing = 10,
+				launcher,
+				tasklist(s), -- Middle widget
+				promptbox,
+			},
 			taglist(s),
 		{ -- Right widgets
 			layout = wibox.layout.fixed.horizontal,
@@ -50,4 +57,5 @@ return function(s)
 			layoutbox(s),
 		},
 	}
+})
 end
