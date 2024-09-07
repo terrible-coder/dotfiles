@@ -146,6 +146,30 @@ function api.Device(path)
 	return dev
 end
 
+function api.DevicePort(path)
+	local DP_IFACE = PA_IFACE .. ".DevicePort"
+	local devport_obj = proxy.Proxy:new({
+		bus = connection,
+		name = nil,
+		path = path,
+		interface = DP_IFACE
+	})
+	local devport = { }
+	setmetatable(devport, {
+		__index = function (_, k)
+			if
+				k == "Index" or
+				k == "Name" or
+				k == "Description" or
+				k == "Priority"
+			then
+				return devport_obj:Get(DP_IFACE, k)
+			end
+		end
+	})
+	return devport
+end
+
 function api:change(delta)
 	-- if delta == 0 then return end
 	-- local volume = self.volume + delta
