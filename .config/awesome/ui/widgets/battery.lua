@@ -14,16 +14,30 @@ local icon_label = wibox.widget.textbox("")
 icon_label.font = beautiful.fonts.nerd..16
 
 local bar_wgt = wibox.widget({
-	widget = wibox.container.background,
-	fg = beautiful.colors.text, bg = beautiful.colors.pine,
-	shape = function(cr, w, h) gshape.rounded_rect(cr, w, h, 2) end,
+	layout = wibox.layout.fixed.horizontal,
+	-- spacing = 5,
 	{
-		widget = wibox.container.margin,
-		left = 5, right = 5, top = 2, bottom = 2,
+		widget = wibox.container.background,
+		shape = function(cr, w, h)
+			gshape.partially_rounded_rect(cr, w, h, true, false, false, true, dpi(2))
+		end,
+		fg = beautiful.colors.text, bg = beautiful.colors.pine,
 		{
-			layout = wibox.layout.fixed.horizontal,
-			spacing = 5,
-			icon_label, text_label,
+			widget = wibox.container.margin,
+			left = dpi(5), right = dpi(5), top = dpi(2), bottom = dpi(2),
+			icon_label,
+		}
+	},
+	{
+		widget = wibox.container.background,
+		bg = beautiful.colors.hl_low,
+		shape = function(cr, w, h)
+			gshape.partially_rounded_rect(cr, w, h, false, true, true, false, dpi(2))
+		end,
+		{
+			widget = wibox.container.margin,
+			left = dpi(10), right = dpi(5),
+			text_label,
 		}
 	}
 })
