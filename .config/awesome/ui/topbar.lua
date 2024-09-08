@@ -4,7 +4,6 @@ local beautiful = require("beautiful")
 local dpi = beautiful.xresources.apply_dpi
 
 -- local keyboardlayout = awful.widget.keyboardlayout()
-local textclock = wibox.widget.textclock("%H:%M")
 local launcher = awful.widget.launcher({
 	image = beautiful.awesome_icon,
 	menu = require("ui.menu")
@@ -53,7 +52,7 @@ return function(s)
 			widgets.battery,
 			-- keyboardlayout,
 			wibox.widget.systray(),
-			textclock,
+			widgets.clock,
 			layoutbox(s),
 		},
 	}
