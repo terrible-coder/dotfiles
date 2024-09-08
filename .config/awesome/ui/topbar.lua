@@ -33,13 +33,13 @@ return function(s)
 		{
 			layout = wibox.layout.align.horizontal,
 			expand = "none",
-			{ -- Left widgets
+			{
 				layout = wibox.layout.fixed.horizontal,
 				spacing = 10,
 				launcher,
-			taglist(s),
-			separator,
-				tasklist(s), -- Middle widget
+				taglist(s),
+				separator,
+				tasklist(s),
 				promptbox,
 			},
 			{
@@ -48,19 +48,19 @@ return function(s)
 				widgets.calendar,
 				widgets.clock
 			},
-		{ -- Right widgets
-			layout = wibox.layout.fixed.horizontal,
-			spacing = 5,
-			widgets.network,
-			separator,
-			widgets.brightness,
-			widgets.volume,
-			separator,
-			widgets.battery,
-			-- keyboardlayout,
-			wibox.widget.systray(),
-			layoutbox(s),
-		},
-	}
-})
+			{
+				layout = wibox.layout.fixed.horizontal,
+				spacing = 5,
+				widgets.network,
+				separator,
+				widgets.brightness,
+				widgets.volume,
+				separator,
+				widgets.battery,
+				-- keyboardlayout,
+				wibox.widget.systray(),
+				layoutbox(s),
+			},
+		}
+	})
 end
