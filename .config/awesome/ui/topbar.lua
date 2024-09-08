@@ -42,7 +42,12 @@ return function(s)
 				tasklist(s), -- Middle widget
 				promptbox,
 			},
-			widgets.clock,
+			{
+				layout = wibox.layout.fixed.horizontal,
+				spacing = dpi(10),
+				widgets.calendar,
+				widgets.clock
+			},
 		{ -- Right widgets
 			layout = wibox.layout.fixed.horizontal,
 			spacing = 5,
