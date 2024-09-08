@@ -3,7 +3,7 @@ local dpi = beautiful.xresources.apply_dpi
 local gshape = require("gears.shape")
 local wibox = require("wibox")
 
-local date_label = wibox.widget.textclock("%Y, %b %d (%A)")
+local date_label = wibox.widget.textclock("%a %d %b, %Y")
 local date_icon = wibox.widget.textbox("󰃭")
 date_icon.font = beautiful.fonts.nerd..16
 
