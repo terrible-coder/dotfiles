@@ -37,10 +37,12 @@ return function(s)
 				layout = wibox.layout.fixed.horizontal,
 				spacing = 10,
 				launcher,
+			taglist(s),
+			separator,
 				tasklist(s), -- Middle widget
 				promptbox,
 			},
-			taglist(s),
+			widgets.clock,
 		{ -- Right widgets
 			layout = wibox.layout.fixed.horizontal,
 			spacing = 5,
@@ -52,7 +54,6 @@ return function(s)
 			widgets.battery,
 			-- keyboardlayout,
 			wibox.widget.systray(),
-			widgets.clock,
 			layoutbox(s),
 		},
 	}
