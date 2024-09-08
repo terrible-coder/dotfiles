@@ -4,7 +4,6 @@ local beautiful = require("beautiful")
 local dpi = beautiful.xresources.apply_dpi
 
 -- local keyboardlayout = awful.widget.keyboardlayout()
-local textclock = wibox.widget.textclock("%H:%M")
 local launcher = awful.widget.launcher({
 	image = beautiful.awesome_icon,
 	menu = require("ui.menu")
@@ -34,28 +33,34 @@ return function(s)
 		{
 			layout = wibox.layout.align.horizontal,
 			expand = "none",
-			{ -- Left widgets
+			{
 				layout = wibox.layout.fixed.horizontal,
 				spacing = 10,
 				launcher,
-				tasklist(s), -- Middle widget
+				taglist(s),
+				separator,
+				tasklist(s),
 				promptbox,
 			},
-			taglist(s),
-		{ -- Right widgets
-			layout = wibox.layout.fixed.horizontal,
-			spacing = 5,
-			widgets.network,
-			separator,
-			widgets.brightness,
-			widgets.volume,
-			separator,
-			widgets.battery,
-			-- keyboardlayout,
-			wibox.widget.systray(),
-			textclock,
-			layoutbox(s),
-		},
-	}
-})
+			{
+				layout = wibox.layout.fixed.horizontal,
+				spacing = dpi(10),
+				widgets.calendar,
+				widgets.clock
+			},
+			{
+				layout = wibox.layout.fixed.horizontal,
+				spacing = 5,
+				widgets.network,
+				separator,
+				widgets.brightness,
+				widgets.volume,
+				separator,
+				widgets.battery,
+				-- keyboardlayout,
+				wibox.widget.systray(),
+				layoutbox(s),
+			},
+		}
+	})
 end
