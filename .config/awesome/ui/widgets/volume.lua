@@ -72,7 +72,7 @@ local sink_widget = wibox.widget({
 local source_label = wibox.widget.textbox()
 source_label.text = volume_text(source.Mute, source.Volume[1], source.BaseVolume)
 local source_icon = wibox.widget.textbox(source.State == 0 and "󰍬" or "󰍮")
-source_icon.font = beautiful.fonts.nerd..16
+source_icon.font = beautiful.fonts.nerd..12
 
 local source_widget = wibox.widget({
 	layout = wibox.layout.fixed.horizontal,
