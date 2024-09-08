@@ -2,6 +2,7 @@ local beautiful = require("beautiful")
 local dpi = beautiful.xresources.apply_dpi
 local gshape = require("gears.shape")
 local wibox = require("wibox")
+local naughty = require("naughty")
 
 local sound = require("sys.sound")
 
@@ -12,12 +13,14 @@ local source_path = sound.GetSourceByName("@DEFAULT_SOURCE@")
 local source = sound.Device(source_path)
 
 sound.ListenForSignal("org.PulseAudio.Core1.Device.VolumeUpdated", {
-	sink_path,
+	sink_path, source_path,
 })
 sound.ListenForSignal("org.PulseAudio.Core1.Device.MuteUpdated", {
-	sink_path,
+	sink_path, source_path,
 })
-
+sound.ListenForSignal("org.PulseAudio.Core1.Device.StateUpdated", {
+	source_path,
+})
 
 local function volume_percent(volume, base_volume)
 	return math.ceil(100 * volume / base_volume)
@@ -68,7 +71,7 @@ local sink_widget = wibox.widget({
 
 local source_label = wibox.widget.textbox()
 source_label.text = volume_text(source.Mute, source.Volume[1], source.BaseVolume)
-local source_icon = wibox.widget.textbox("󰍬")
+local source_icon = wibox.widget.textbox(source.State == 0 and "󰍬" or "󰍮")
 source_icon.font = beautiful.fonts.nerd..16
 
 local source_widget = wibox.widget({
@@ -139,6 +142,22 @@ end, "VolumeUpdated")
 sink.connect_signal(function(self, _)
 	sink_label.text = volume_text(self.Mute, self.Volume[1], self.BaseVolume)
 end, "MuteUpdated")
+
+source.connect_signal(function(_, state)
+	if state == 0 then
+		source_icon.text = "󰍬"
+		naughty.notify({
+			title = "Microphone",
+			text = "Listening"
+		})
+	else
+		source_icon.text = "󰍮"
+		naughty.notify({
+			title = "Microphone",
+			text = "Suspended"
+		})
+	end
+end, "StateUpdated")
 
 return {
 	sink = sink_widget,
