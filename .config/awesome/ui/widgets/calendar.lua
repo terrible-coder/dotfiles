@@ -14,7 +14,7 @@ local bar_wgt = wibox.widget({
 		shape = function(cr, w, h)
 			gshape.partially_rounded_rect(cr, w, h, true, false, false, true, dpi(2))
 		end,
-		fg = beautiful.colors.text, bg = beautiful.colors.pine,
+		fg = beautiful.colors.hl_low, bg = beautiful.colors.rose,
 		{
 			widget = wibox.container.margin,
 			left = dpi(5), right = dpi(5), top = dpi(2), bottom = dpi(2),
@@ -28,7 +28,7 @@ local bar_wgt = wibox.widget({
 			gshape.partially_rounded_rect(cr, w, h, false, true, true, false, dpi(2))
 		end,
 		shape_border_width = dpi(1),
-		shape_border_color = beautiful.colors.pine,
+		shape_border_color = beautiful.colors.rose,
 		{
 			widget = wibox.container.margin,
 			left = dpi(10), right = dpi(5),
