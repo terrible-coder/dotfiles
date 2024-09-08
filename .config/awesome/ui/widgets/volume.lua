@@ -143,6 +143,13 @@ sink.connect_signal(function(self, _)
 	sink_label.text = volume_text(self.Mute, self.Volume[1], self.BaseVolume)
 end, "MuteUpdated")
 
+source.connect_signal(function(self, _)
+	source_label.text = volume_text(self.Mute, self.Volume[1], self.BaseVolume)
+end, "VolumeUpdated")
+source.connect_signal(function(self, _)
+	source_label.text = volume_text(self.Mute, self.Volume[1], self.BaseVolume)
+end, "MuteUpdated")
+
 source.connect_signal(function(_, state)
 	if state == 0 then
 		source_icon.text = "󰍬"
