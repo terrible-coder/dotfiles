@@ -1,5 +1,6 @@
 local awful = require("awful")
 local beautiful = require("beautiful")
+local dpi = beautiful.xresources.apply_dpi
 local wibox = require("wibox")
 local gshape = require("gears.shape")
 
@@ -21,40 +22,59 @@ local icons = {
 
 local wgt_icon = wibox.widget.textbox(icons.unavailable)
 wgt_icon.font = beautiful.fonts.nerd..16
+local wgt_label = wibox.widget.textbox("WiFi off")
+
 local bar_widget = wibox.widget({
-	widget = wibox.container.background,
-	fg = beautiful.colors.hl_low, bg = beautiful.colors.foam,
-	shape = function(cr, w, h) gshape.rounded_rect(cr, w, h, 2) end,
+	layout = wibox.layout.fixed.horizontal,
+	-- spacing = 5,
 	{
-		widget = wibox.container.margin,
-		top = 2, bottom = 2, left = 5, right = 5,
-		wgt_icon
+		widget = wibox.container.background,
+		shape = function(cr, w, h)
+			gshape.partially_rounded_rect(cr, w, h, true, false, false, true, dpi(2))
+		end,
+		fg = beautiful.colors.hl_low, bg = beautiful.colors.foam,
+		{
+			widget = wibox.container.margin,
+			left = dpi(5), right = dpi(5), top = dpi(2), bottom = dpi(2),
+			wgt_icon,
+		}
+	},
+	{
+		widget = wibox.container.background,
+		bg = beautiful.colors.hl_low,
+		shape = function(cr, w, h)
+			gshape.partially_rounded_rect(cr, w, h, false, true, true, false, dpi(2))
+		end,
+		shape_border_width = dpi(1),
+		shape_border_color = beautiful.colors.foam,
+		{
+			widget = wibox.container.margin,
+			left = dpi(10), right = dpi(5),
+			wgt_label,
+		}
 	}
 })
-
-local tooltip = awful.tooltip({ })
-tooltip:add_to_object(bar_widget)
 
 wireless.socket:connect_signal("StateChanged", function(_, state)
 	if state.new == net_enums.DeviceState.UNKNOWN then
 		wgt_icon.text = icons.unknown
-		tooltip.text = "??"
+		wgt_label.text = "??"
 	elseif state.new == net_enums.DeviceState.UNAVAILABLE then
 		wgt_icon.text = icons.unavailable
-		tooltip.text = "WiFi off"
+		wgt_label.text = "WiFi off"
 	elseif state.new == net_enums.DeviceState.DISCONNECTED then
 		wgt_icon.text = icons.disconnected
-		tooltip.text = "Disconnected"
+		wgt_label.text = "Disconnected"
 	elseif state.new >= net_enums.DeviceState.PREPARE and
 		     state.new <= net_enums.DeviceState.SECONDARIES then
 		wgt_icon.text = icons.connecting
-		tooltip.text = "Connecting..."
+		wgt_label.text = "Connecting..."
 	elseif state.new == net_enums.DeviceState.ACTIVATED then
 		local ap_inuse = wireless.AccessPoint(wireless.Device.ActiveAccessPoint)
 		wgt_icon.text = icons.activated[1]
-		tooltip.text = string.char(table.unpack(ap_inuse.Ssid))
+		wgt_label.text = string.char(table.unpack(ap_inuse.Ssid))
 	else
-		tooltip.text = "new: "..state.new..", old: "..state.old..", reason: "..state.reason
+		wgt_label.text = "new: "..state.new..", old: "..state.old..", reason: "..state.reason
 	end
 end)
 

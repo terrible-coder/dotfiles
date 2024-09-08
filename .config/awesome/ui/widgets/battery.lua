@@ -5,25 +5,56 @@ local awful = require("awful")
 local beautiful = require("beautiful")
 local dpi = beautiful.xresources.apply_dpi
 local gshape = require("gears.shape")
+local gmath = require("gears.math")
 local wibox = require("wibox")
 
 local server = require("sys.battery")
 
+local icons = {
+	"󰂎",
+	"󰁺",
+	"󰁻",
+	"󰁼",
+	"󰁽",
+	"󰁾",
+	"󰁿",
+	"󰂀",
+	"󰂁",
+	"󰂂",
+	"󰁹",
+}
+
 local text_label = wibox.widget.textbox("00")
 local icon_label = wibox.widget.textbox("")
-icon_label.font = beautiful.fonts.nerd..16
+icon_label.font = beautiful.fonts.nerd..10
 
 local bar_wgt = wibox.widget({
-	widget = wibox.container.background,
-	fg = beautiful.colors.text, bg = beautiful.colors.pine,
-	shape = function(cr, w, h) gshape.rounded_rect(cr, w, h, 2) end,
+	layout = wibox.layout.fixed.horizontal,
+	-- spacing = 5,
 	{
-		widget = wibox.container.margin,
-		left = 5, right = 5, top = 2, bottom = 2,
+		widget = wibox.container.background,
+		shape = function(cr, w, h)
+			gshape.partially_rounded_rect(cr, w, h, true, false, false, true, dpi(2))
+		end,
+		fg = beautiful.colors.text, bg = beautiful.colors.pine,
 		{
-			layout = wibox.layout.fixed.horizontal,
-			spacing = 5,
-			icon_label, text_label,
+			widget = wibox.container.margin,
+			left = dpi(5), right = dpi(5), top = dpi(2), bottom = dpi(2),
+			icon_label,
+		}
+	},
+	{
+		widget = wibox.container.background,
+		bg = beautiful.colors.hl_low,
+		shape = function(cr, w, h)
+			gshape.partially_rounded_rect(cr, w, h, false, true, true, false, dpi(2))
+		end,
+		shape_border_width = dpi(1),
+		shape_border_color = beautiful.colors.pine,
+		{
+			widget = wibox.container.margin,
+			left = dpi(10), right = dpi(5),
+			text_label,
 		}
 	}
 })
@@ -82,10 +113,16 @@ Capi.awesome.connect_signal("popup_show", function(uid)
 	})
 end)
 
+local _last_icon_level = 0
 server:connect_signal("battery::update", function(self)
 	text_label.text = self.level
 	popup_level.text = self.level.."%"
 	popup_waiting.text = self.waiting
+	local icon_level = gmath.round(self.level / 10) + 1
+	if icon_level ~= _last_icon_level then
+		_last_icon_level = icon_level
+		icon_label.text = icons[icon_level]
+	end
 	local health_indicator = ""
 	if self.health > 80 then
 		health_indicator = "  "

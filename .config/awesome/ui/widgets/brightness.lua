@@ -10,22 +10,35 @@ local wibox = require("wibox")
 local server = require("sys.backlight")
 
 local bar_wgt_label = wibox.widget.textbox("00")
+local bar_wgt_icon = wibox.widget.textbox("󰃟")
+bar_wgt_icon.font = beautiful.fonts.nerd..16
 
 local bar_wgt = wibox.widget({
-	widget = wibox.container.background,
-	fg = beautiful.colors.hl_low, bg = beautiful.colors.foam,
-	shape = function(cr, w, h) gshape.rounded_rect(cr, w, h, 2) end,
+	layout = wibox.layout.fixed.horizontal,
+	-- spacing = 5,
 	{
-		widget = wibox.container.margin,
-		left = 5, right = 5, top = 2, bottom = 2,
+		widget = wibox.container.background,
+		shape = function(cr, w, h)
+			gshape.partially_rounded_rect(cr, w, h, true, false, false, true, dpi(2))
+		end,
+		fg = beautiful.colors.hl_low, bg = beautiful.colors.foam,
 		{
-			layout = wibox.layout.fixed.horizontal,
-			spacing = 5,
-			{
-				widget = wibox.widget.textbox, id = "icon",
-				font = beautiful.fonts.nerd..16,
-				text = "󰃟",
-			},
+			widget = wibox.container.margin,
+			left = dpi(5), right = dpi(5), top = dpi(2), bottom = dpi(2),
+			bar_wgt_icon,
+		}
+	},
+	{
+		widget = wibox.container.background,
+		bg = beautiful.colors.hl_low,
+		shape = function(cr, w, h)
+			gshape.partially_rounded_rect(cr, w, h, false, true, true, false, dpi(2))
+		end,
+		shape_border_width = dpi(1),
+		shape_border_color = beautiful.colors.foam,
+		{
+			widget = wibox.container.margin,
+			left = dpi(10), right = dpi(5),
 			bar_wgt_label,
 		}
 	}
@@ -33,13 +46,14 @@ local bar_wgt = wibox.widget({
 
 local slider = wibox.widget({
 	widget = wibox.widget.slider,
-	bar_height = 2, bar_width = 30,
+	bar_height = dpi(2), bar_width = dpi(30),
 	bar_shape = gshape.rounded_bar,
-	handle_shape = function(cr, w, h) gshape.circle(cr, w, h, 5) end,
-	handle_width = 5,
-	handle_margins = { top = 2, bottom = 2 },
+	handle_shape = function(cr, _, h) gshape.rounded_rect(cr, h, h, 2) end,
+	handle_width = dpi(5),
+	handle_margins = { top = dpi(2), bottom = dpi(2), left = dpi(2), right = dpi(2) },
+	handle_color = beautiful.colors.iris,
 	minimum = 0, maximum = 100,
-	forced_width = 120, forced_height = 5,
+	forced_width = dpi(120), forced_height = dpi(5),
 	value = 0,
 })
 
