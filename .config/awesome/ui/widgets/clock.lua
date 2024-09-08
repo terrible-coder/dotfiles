@@ -4,7 +4,7 @@ local dpi = beautiful.xresources.apply_dpi
 local gshape = require("gears.shape")
 local wibox = require("wibox")
 
-local textclock = wibox.widget.textclock("%H:%M")
+local textclock = wibox.widget.textclock("%Y, %b %d %H:%M")
 local clock_icon = wibox.widget.textbox("󰥔")
 clock_icon.font = beautiful.fonts.nerd..16
 
@@ -37,5 +37,13 @@ local bar_wgt = wibox.widget({
 		}
 	}
 })
+
+awful.tooltip({
+	objects = { textclock },
+	timer_function = function()
+		return os.date("Today is %A")
+	end,
+})
+
 
 return bar_wgt
