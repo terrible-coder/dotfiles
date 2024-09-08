@@ -2,19 +2,25 @@ local beautiful = require("beautiful")
 local dpi = beautiful.xresources.apply_dpi
 local gshape = require("gears.shape")
 local wibox = require("wibox")
+local naughty = require("naughty")
 
 local sound = require("sys.sound")
 
 local sink_path = sound.GetSinkByName("@DEFAULT_SINK@")
 local sink = sound.Device(sink_path)
 
+local source_path = sound.GetSourceByName("@DEFAULT_SOURCE@")
+local source = sound.Device(source_path)
+
 sound.ListenForSignal("org.PulseAudio.Core1.Device.VolumeUpdated", {
-	sink_path,
+	sink_path, source_path,
 })
 sound.ListenForSignal("org.PulseAudio.Core1.Device.MuteUpdated", {
-	sink_path,
+	sink_path, source_path,
 })
-
+sound.ListenForSignal("org.PulseAudio.Core1.Device.StateUpdated", {
+	source_path,
+})
 
 local function volume_percent(volume, base_volume)
 	return math.ceil(100 * volume / base_volume)
@@ -28,14 +34,13 @@ local function volume_text(mute, volume, base_volume)
 	end
 end
 
-local bar_wgt_label = wibox.widget.textbox()
-bar_wgt_label.text = volume_text(sink.Mute, sink.Volume[1], sink.BaseVolume)
-local bar_wgt_icon = wibox.widget.textbox("")
-bar_wgt_icon.font = beautiful.fonts.nerd..16
+local sink_label = wibox.widget.textbox()
+sink_label.text = volume_text(sink.Mute, sink.Volume[1], sink.BaseVolume)
+local sink_icon = wibox.widget.textbox("")
+sink_icon.font = beautiful.fonts.nerd..16
 
-local bar_wgt = wibox.widget({
+local sink_widget = wibox.widget({
 	layout = wibox.layout.fixed.horizontal,
-	-- spacing = 5,
 	{
 		widget = wibox.container.background,
 		shape = function(cr, w, h)
@@ -45,7 +50,7 @@ local bar_wgt = wibox.widget({
 		{
 			widget = wibox.container.margin,
 			left = dpi(5), right = dpi(5), top = dpi(2), bottom = dpi(2),
-			bar_wgt_icon,
+			sink_icon,
 		}
 	},
 	{
@@ -59,7 +64,42 @@ local bar_wgt = wibox.widget({
 		{
 			widget = wibox.container.margin,
 			left = dpi(10), right = dpi(5),
-			bar_wgt_label,
+			sink_label,
+		}
+	}
+})
+
+local source_label = wibox.widget.textbox()
+source_label.text = volume_text(source.Mute, source.Volume[1], source.BaseVolume)
+local source_icon = wibox.widget.textbox(source.State == 0 and "󰍬" or "󰍮")
+source_icon.font = beautiful.fonts.nerd..12
+
+local source_widget = wibox.widget({
+	layout = wibox.layout.fixed.horizontal,
+	{
+		widget = wibox.container.background,
+		shape = function(cr, w, h)
+			gshape.partially_rounded_rect(cr, w, h, true, false, false, true, dpi(2))
+		end,
+		fg = beautiful.colors.hl_low, bg = beautiful.colors.foam,
+		{
+			widget = wibox.container.margin,
+			left = dpi(5), right = dpi(5), top = dpi(2), bottom = dpi(2),
+			source_icon,
+		}
+	},
+	{
+		widget = wibox.container.background,
+		bg = beautiful.colors.hl_low,
+		shape = function(cr, w, h)
+			gshape.partially_rounded_rect(cr, w, h, false, true, true, false, dpi(2))
+		end,
+		shape_border_width = dpi(1),
+		shape_border_color = beautiful.colors.foam,
+		{
+			widget = wibox.container.margin,
+			left = dpi(10), right = dpi(5),
+			source_label,
 		}
 	}
 })
@@ -97,10 +137,36 @@ local bar_wgt = wibox.widget({
 -- volume_popup.uid = 220
 
 sink.connect_signal(function(self, _)
-	bar_wgt_label.text = volume_text(self.Mute, self.Volume[1], self.BaseVolume)
+	sink_label.text = volume_text(self.Mute, self.Volume[1], self.BaseVolume)
 end, "VolumeUpdated")
 sink.connect_signal(function(self, _)
-	bar_wgt_label.text = volume_text(self.Mute, self.Volume[1], self.BaseVolume)
+	sink_label.text = volume_text(self.Mute, self.Volume[1], self.BaseVolume)
 end, "MuteUpdated")
 
-return bar_wgt
+source.connect_signal(function(self, _)
+	source_label.text = volume_text(self.Mute, self.Volume[1], self.BaseVolume)
+end, "VolumeUpdated")
+source.connect_signal(function(self, _)
+	source_label.text = volume_text(self.Mute, self.Volume[1], self.BaseVolume)
+end, "MuteUpdated")
+
+source.connect_signal(function(_, state)
+	if state == 0 then
+		source_icon.text = "󰍬"
+		naughty.notify({
+			title = "Microphone",
+			text = "Listening"
+		})
+	else
+		source_icon.text = "󰍮"
+		naughty.notify({
+			title = "Microphone",
+			text = "Suspended"
+		})
+	end
+end, "StateUpdated")
+
+return {
+	sink = sink_widget,
+	source = source_widget,
+}
