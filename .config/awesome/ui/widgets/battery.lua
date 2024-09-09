@@ -30,7 +30,6 @@ icon_label.font = beautiful.fonts.nerd..10
 
 local bar_wgt = wibox.widget({
 	layout = wibox.layout.fixed.horizontal,
-	-- spacing = 5,
 	{
 		widget = wibox.container.background,
 		shape = function(cr, w, h)
@@ -39,7 +38,7 @@ local bar_wgt = wibox.widget({
 		fg = beautiful.colors.text, bg = beautiful.colors.pine,
 		{
 			widget = wibox.container.margin,
-			left = dpi(5), right = dpi(5), top = dpi(2), bottom = dpi(2),
+			left = dpi(4), right = dpi(3), top = dpi(2), bottom = dpi(2),
 			icon_label,
 		}
 	},
@@ -53,7 +52,7 @@ local bar_wgt = wibox.widget({
 		shape_border_color = beautiful.colors.pine,
 		{
 			widget = wibox.container.margin,
-			left = dpi(10), right = dpi(5),
+			left = dpi(7), right = dpi(5),
 			text_label,
 		}
 	}

@@ -17,7 +17,7 @@ local bar_wgt = wibox.widget({
 		fg = beautiful.colors.hl_low, bg = beautiful.colors.rose,
 		{
 			widget = wibox.container.margin,
-			left = dpi(5), right = dpi(5), top = dpi(2), bottom = dpi(2),
+			left = dpi(4), right = dpi(3), top = dpi(2), bottom = dpi(2),
 			time_icon,
 		}
 	},
@@ -31,7 +31,7 @@ local bar_wgt = wibox.widget({
 		shape_border_color = beautiful.colors.rose,
 		{
 			widget = wibox.container.margin,
-			left = dpi(10), right = dpi(5),
+			left = dpi(7), right = dpi(5),
 			time_label,
 		}
 	}

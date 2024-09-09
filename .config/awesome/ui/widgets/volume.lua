@@ -49,7 +49,7 @@ local sink_widget = wibox.widget({
 		fg = beautiful.colors.hl_low, bg = beautiful.colors.foam,
 		{
 			widget = wibox.container.margin,
-			left = dpi(5), right = dpi(5), top = dpi(2), bottom = dpi(2),
+			left = dpi(4), right = dpi(3), top = dpi(2), bottom = dpi(2),
 			sink_icon,
 		}
 	},
@@ -63,7 +63,7 @@ local sink_widget = wibox.widget({
 		shape_border_color = beautiful.colors.foam,
 		{
 			widget = wibox.container.margin,
-			left = dpi(10), right = dpi(5),
+			left = dpi(7), right = dpi(5),
 			sink_label,
 		}
 	}
@@ -84,7 +84,7 @@ local source_widget = wibox.widget({
 		fg = beautiful.colors.hl_low, bg = beautiful.colors.foam,
 		{
 			widget = wibox.container.margin,
-			left = dpi(5), right = dpi(5), top = dpi(2), bottom = dpi(2),
+			left = dpi(4), right = dpi(3), top = dpi(2), bottom = dpi(2),
 			source_icon,
 		}
 	},
@@ -98,7 +98,7 @@ local source_widget = wibox.widget({
 		shape_border_color = beautiful.colors.foam,
 		{
 			widget = wibox.container.margin,
-			left = dpi(10), right = dpi(5),
+			left = dpi(7), right = dpi(5),
 			source_label,
 		}
 	}
