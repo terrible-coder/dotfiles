@@ -3,7 +3,6 @@ local beautiful = require("beautiful")
 
 local client_binds = require("binds.client")
 
--- {{{ Rules
 -- Rules to apply to new clients (through the "manage" signal).
 awful.rules.rules = {
 	-- All clients will match this rule.
@@ -65,10 +64,18 @@ awful.rules.rules = {
 		properties = { titlebars_enabled = true }
 	},
 
+	-- Set Discord to always map on the tag named "7"
+	{
+		rule = { class = "discord" },
+		properties = {
+			screen = 1,
+			tag = "7",
+		},
+	},
+
 	-- Set Firefox to always map on the tag named "2" on screen 1.
 	-- {
 		-- rule = { class = "Firefox" },
 	--   properties = { screen = 1, tag = "2" }
 	--  },
 }
--- }}}
