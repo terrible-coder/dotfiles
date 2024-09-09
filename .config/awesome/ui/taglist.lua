@@ -34,7 +34,7 @@ return function(s)
 		layout = wibox.layout.flex.horizontal,
 		widget_template = {
 			widget = wibox.container.margin,
-			forced_width = dpi(25),
+			forced_width = dpi(21),
 			{
 				widget = wibox.container.background, id = "background_role",
 				fg = beautiful.colors.surface,
