@@ -126,7 +126,7 @@ function api.Device(path)
 			local value = dev_obj[k]
 			if type(value) == "function" then
 				return function (...)
-					return value(dev, ...)
+					return value(dev_obj, ...)
 				end
 			end
 			return value

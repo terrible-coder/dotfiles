@@ -136,18 +136,18 @@ local source_widget = wibox.widget({
 
 -- volume_popup.uid = 220
 
-sink.connect_signal(function(self, _)
-	sink_label.text = volume_text(self.Mute, self.Volume[1], self.BaseVolume)
+sink.connect_signal(function(_, _)
+	sink_label.text = volume_text(sink.Mute, sink.Volume[1], sink.BaseVolume)
 end, "VolumeUpdated")
-sink.connect_signal(function(self, _)
-	sink_label.text = volume_text(self.Mute, self.Volume[1], self.BaseVolume)
+sink.connect_signal(function(_, _)
+	sink_label.text = volume_text(sink.Mute, sink.Volume[1], sink.BaseVolume)
 end, "MuteUpdated")
 
-source.connect_signal(function(self, _)
-	source_label.text = volume_text(self.Mute, self.Volume[1], self.BaseVolume)
+source.connect_signal(function(_, _)
+	source_label.text = volume_text(source.Mute, source.Volume[1], source.BaseVolume)
 end, "VolumeUpdated")
-source.connect_signal(function(self, _)
-	source_label.text = volume_text(self.Mute, self.Volume[1], self.BaseVolume)
+source.connect_signal(function(_, _)
+	source_label.text = volume_text(source.Mute, source.Volume[1], source.BaseVolume)
 end, "MuteUpdated")
 
 source.connect_signal(function(_, state)
