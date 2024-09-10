@@ -10,8 +10,14 @@ local naughty = require("naughty")
 
 local sound = require("sys.sound")
 
+-- This function, in this file, is wrong. Precisely because it is wrong that we
+-- get the correct answer at the end. The PulseAudio source Device does not show
+-- the correct BaseVolume value. I do not know why. I am too tired to find out
+-- now. If I find the reason and it is within me to update this function, I
+-- will. If the problem is resolved from PulseAudio's side then I will be more
+-- than happy.
 local function volume_percent(volume, base_volume)
-	return math.ceil(100 * volume / base_volume)
+	return math.ceil(10 * volume / base_volume)
 end
 
 local function volume_text(mute, volume, base_volume)
