@@ -15,7 +15,7 @@ sound.ListenForSignal("org.PulseAudio.Core1.Device.MuteUpdated", {
 	sink.object_path, source.object_path,
 })
 sound.ListenForSignal("org.PulseAudio.Core1.Device.ActivePortUpdated", {
-	sink.object_path,
+	sink.object_path, source.object_path,
 })
 sound.ListenForSignal("org.PulseAudio.Core1.Device.StateUpdated", {
 	source.object_path,
