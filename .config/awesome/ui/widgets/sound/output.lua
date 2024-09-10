@@ -10,25 +10,6 @@ local naughty = require("naughty")
 
 local sound = require("sys.sound")
 
-local sink_path = sound.GetSinkByName("@DEFAULT_SINK@")
-local sink = sound.Device(sink_path)
-
-local source_path = sound.GetSourceByName("@DEFAULT_SOURCE@")
-local source = sound.Device(source_path)
-
-sound.ListenForSignal("org.PulseAudio.Core1.Device.VolumeUpdated", {
-	sink_path, source_path,
-})
-sound.ListenForSignal("org.PulseAudio.Core1.Device.MuteUpdated", {
-	sink_path, source_path,
-})
-sound.ListenForSignal("org.PulseAudio.Core1.Device.ActivePortUpdated", {
-	sink_path,
-})
-sound.ListenForSignal("org.PulseAudio.Core1.Device.StateUpdated", {
-	source_path,
-})
-
 local function volume_percent(volume, base_volume)
 	return math.ceil(100 * volume / base_volume)
 end
@@ -41,18 +22,28 @@ local function volume_text(mute, volume, base_volume)
 	end
 end
 
+local sink_path = sound.GetSinkByName("@DEFAULT_SINK@")
+local sink = sound.Device(sink_path)
+
 local sink_label = wibox.widget.textbox()
 sink_label.text = volume_text(sink.Mute, sink.Volume[1], sink.BaseVolume)
 local sink_icon = wibox.widget.textbox("")
 sink_icon.font = beautiful.fonts.nerd..16
 
+local partial = {
+	left = function(cr, w, h)
+		gshape.partially_rounded_rect(cr, w, h, true, false, false, true, dpi(2))
+	end,
+	right = function(cr, w, h)
+		gshape.partially_rounded_rect(cr, w, h, false, true, true, false, dpi(2))
+	end
+}
+
 local sink_widget = wibox.widget({
 	layout = wibox.layout.fixed.horizontal,
 	{
 		widget = wibox.container.background,
-		shape = function(cr, w, h)
-			gshape.partially_rounded_rect(cr, w, h, true, false, false, true, dpi(2))
-		end,
+		shape = partial.left,
 		fg = beautiful.colors.hl_low, bg = beautiful.colors.foam,
 		{
 			widget = wibox.container.margin,
@@ -63,50 +54,13 @@ local sink_widget = wibox.widget({
 	{
 		widget = wibox.container.background,
 		bg = beautiful.colors.hl_low,
-		shape = function(cr, w, h)
-			gshape.partially_rounded_rect(cr, w, h, false, true, true, false, dpi(2))
-		end,
+		shape = partial.right,
 		shape_border_width = dpi(1),
 		shape_border_color = beautiful.colors.foam,
 		{
 			widget = wibox.container.margin,
 			left = dpi(7), right = dpi(5),
 			sink_label,
-		}
-	}
-})
-
-local source_label = wibox.widget.textbox()
-source_label.text = volume_text(source.Mute, source.Volume[1], source.BaseVolume)
-local source_icon = wibox.widget.textbox(source.State == 0 and "󰍬" or "󰍮")
-source_icon.font = beautiful.fonts.nerd..12
-
-local source_widget = wibox.widget({
-	layout = wibox.layout.fixed.horizontal,
-	{
-		widget = wibox.container.background,
-		shape = function(cr, w, h)
-			gshape.partially_rounded_rect(cr, w, h, true, false, false, true, dpi(2))
-		end,
-		fg = beautiful.colors.hl_low, bg = beautiful.colors.foam,
-		{
-			widget = wibox.container.margin,
-			left = dpi(4), right = dpi(3), top = dpi(2), bottom = dpi(2),
-			source_icon,
-		}
-	},
-	{
-		widget = wibox.container.background,
-		bg = beautiful.colors.hl_low,
-		shape = function(cr, w, h)
-			gshape.partially_rounded_rect(cr, w, h, false, true, true, false, dpi(2))
-		end,
-		shape_border_width = dpi(1),
-		shape_border_color = beautiful.colors.foam,
-		{
-			widget = wibox.container.margin,
-			left = dpi(7), right = dpi(5),
-			source_label,
 		}
 	}
 })
@@ -166,7 +120,7 @@ for i, path in ipairs(sink.Ports) do
 	ports_layout:add(item)
 end
 
-local volume_popup = awful.popup({
+local sink_popup = awful.popup({
 	widget = {
 		widget = wibox.container.margin,
 		margins = dpi(5),
@@ -179,23 +133,23 @@ local volume_popup = awful.popup({
 	visible = false,
 })
 
-volume_popup.uid = 220
+sink_popup.uid = 220
 
 sink_widget:buttons(
 	awful.button({ }, 1,
 	function()
-		Capi.awesome.emit_signal("popup_show", volume_popup.uid)
+		Capi.awesome.emit_signal("popup_show", sink_popup.uid)
 	end)
 )
 
 Capi.awesome.connect_signal("popup_show", function(uid)
-	if uid == volume_popup.uid then
-		volume_popup.visible = not volume_popup.visible
+	if uid == sink_popup.uid then
+		sink_popup.visible = not sink_popup.visible
 	else
-		volume_popup.visible = false
+		sink_popup.visible = false
 	end
-	if not volume_popup.visible then return end
-	awful.placement.next_to(volume_popup, {
+	if not sink_popup.visible then return end
+	awful.placement.next_to(sink_popup, {
 		preferred_positions = { "bottom" },
 		preferred_anchors = { "middle" },
 		mode = "cursor_inside",
@@ -219,30 +173,7 @@ sink.connect_signal(function(_, new_active)
 	end
 end, "ActivePortUpdated")
 
-source.connect_signal(function(_, _)
-	source_label.text = volume_text(source.Mute, source.Volume[1], source.BaseVolume)
-end, "VolumeUpdated")
-source.connect_signal(function(_, _)
-	source_label.text = volume_text(source.Mute, source.Volume[1], source.BaseVolume)
-end, "MuteUpdated")
-
-source.connect_signal(function(_, state)
-	if state == 0 then
-		source_icon.text = "󰍬"
-		naughty.notify({
-			title = "Microphone",
-			text = "Listening"
-		})
-	else
-		source_icon.text = "󰍮"
-		naughty.notify({
-			title = "Microphone",
-			text = "Suspended"
-		})
-	end
-end, "StateUpdated")
-
 return {
-	sink = sink_widget,
-	source = source_widget,
+	widget = sink_widget,
+	object = sink
 }
