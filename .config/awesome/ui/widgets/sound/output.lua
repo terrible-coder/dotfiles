@@ -166,10 +166,19 @@ end, "MuteUpdated")
 sink.connect_signal(function(_, new_active)
 	active_port_path = new_active
 	for i, path in ipairs(port_paths) do
-		local bg = path == active_port_path and beautiful.colors.iris or nil
-		local fg = path == active_port_path and beautiful.colors.hl_low or nil
-		ports_layout.children[i].bg = bg
-		ports_layout.children[i].fg = fg
+		if path == active_port_path then
+			ports_layout.children[i].bg = beautiful.colors.iris
+			ports_layout.children[i].fg = beautiful.colors.hl_low
+			naughty.notify({
+				title = "Audio output",
+				text = ("Port change to '%s'"):format(
+					ports_layout.children[i].children[1].children[1].text
+				)
+			})
+		else
+			ports_layout.children[i].bg = nil
+			ports_layout.children[i].fg = nil
+		end
 	end
 end, "ActivePortUpdated")
 
