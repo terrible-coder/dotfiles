@@ -1,3 +1,7 @@
+local Capi = {
+	awesome = awesome
+}
+local awful = require("awful")
 local beautiful = require("beautiful")
 local dpi = beautiful.xresources.apply_dpi
 local gshape = require("gears.shape")
@@ -134,7 +138,61 @@ local source_widget = wibox.widget({
 -- 		server:change(slider.value - server.volume)
 -- end)
 
--- volume_popup.uid = 220
+local ports_layout = wibox.layout.flex.vertical()
+local active_port_path = sink.ActivePort
+for _, path in ipairs(sink.Ports) do
+	local item = wibox.widget({
+		widget = wibox.container.background,
+		bg = path == active_port_path and beautiful.colors.iris or nil,
+		shape = function(cr, w, h) gshape.rounded_rect(cr, w, h, 2) end,
+		{
+			widget = wibox.container.margin,
+			left = dpi(5), right = dpi(5), top = dpi(2), bottom = dpi(2),
+			{
+				widget = wibox.widget.textbox,
+				text = sound.DevicePort(path).Description,
+			}
+		}
+	})
+	ports_layout:add(item)
+end
+
+local volume_popup = awful.popup({
+	widget = {
+		widget = wibox.container.margin,
+		margins = dpi(5),
+		ports_layout,
+	},
+	shape = function(cr, w, h) gshape.rounded_rect(cr, w, h, 5) end,
+	border_width = dpi(2),
+	border_color = beautiful.colors.iris,
+	ontop = true,
+	visible = false,
+})
+
+volume_popup.uid = 220
+
+sink_widget:buttons(
+	awful.button({ }, 1,
+	function()
+		Capi.awesome.emit_signal("popup_show", volume_popup.uid)
+	end)
+)
+
+Capi.awesome.connect_signal("popup_show", function(uid)
+	if uid == volume_popup.uid then
+		volume_popup.visible = not volume_popup.visible
+	else
+		volume_popup.visible = false
+	end
+	if not volume_popup.visible then return end
+	awful.placement.next_to(volume_popup, {
+		preferred_positions = { "bottom" },
+		preferred_anchors = { "middle" },
+		mode = "cursor_inside",
+		offset = { y = 5 },
+	})
+end)
 
 sink.connect_signal(function(_, _)
 	sink_label.text = volume_text(sink.Mute, sink.Volume[1], sink.BaseVolume)
