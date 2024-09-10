@@ -43,7 +43,7 @@ ignore-article "https://www.newslaundry.com/stories.rss?time-period=last-7-days&
 ignore-article "https://www.thehindu.com/opinion/columns/feeder/default.rss" "title =~ \"Corrections and Clarifications\""
 
 browser "readable %u | w3m -T text/html"
-macro o set browser "qutebrowser %u" ; open-in-browser ; set browser "readable %u | w3m -T text/html"
-macro O set browser "qutebrowser %u" ; open-in-browser-and-mark-read ; set browser "readable %u | w3m -T text/html"
+macro o set browser "waterfox %u" ; open-in-browser ; set browser "readable %u | w3m -T text/html"
+macro O set browser "waterfox %u" ; open-in-browser-and-mark-read ; set browser "readable %u | w3m -T text/html"
 macro v set browser "mpv %u" ; open-in-browser ; set browser "readable %u | w3m -T text/html"
 macro V set browser "mpv %u" ; open-in-browser-and-mark-read ; set browser "readable %u | w3m -T text/html"
