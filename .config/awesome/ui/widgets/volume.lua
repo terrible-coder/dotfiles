@@ -22,6 +22,9 @@ sound.ListenForSignal("org.PulseAudio.Core1.Device.VolumeUpdated", {
 sound.ListenForSignal("org.PulseAudio.Core1.Device.MuteUpdated", {
 	sink_path, source_path,
 })
+sound.ListenForSignal("org.PulseAudio.Core1.Device.ActivePortUpdated", {
+	sink_path,
+})
 sound.ListenForSignal("org.PulseAudio.Core1.Device.StateUpdated", {
 	source_path,
 })
@@ -138,12 +141,18 @@ local source_widget = wibox.widget({
 -- 		server:change(slider.value - server.volume)
 -- end)
 
+-- Record for when ActivePortUpdated. This is assuming that the order won't
+-- change.
+local port_paths = { }
+
 local ports_layout = wibox.layout.flex.vertical()
 local active_port_path = sink.ActivePort
-for _, path in ipairs(sink.Ports) do
+for i, path in ipairs(sink.Ports) do
+	port_paths[i] = path
 	local item = wibox.widget({
 		widget = wibox.container.background,
 		bg = path == active_port_path and beautiful.colors.iris or nil,
+		fg = path == active_port_path and beautiful.colors.hl_low or nil,
 		shape = function(cr, w, h) gshape.rounded_rect(cr, w, h, 2) end,
 		{
 			widget = wibox.container.margin,
@@ -200,6 +209,15 @@ end, "VolumeUpdated")
 sink.connect_signal(function(_, _)
 	sink_label.text = volume_text(sink.Mute, sink.Volume[1], sink.BaseVolume)
 end, "MuteUpdated")
+sink.connect_signal(function(_, new_active)
+	active_port_path = new_active
+	for i, path in ipairs(port_paths) do
+		local bg = path == active_port_path and beautiful.colors.iris or nil
+		local fg = path == active_port_path and beautiful.colors.hl_low or nil
+		ports_layout.children[i].bg = bg
+		ports_layout.children[i].fg = fg
+	end
+end, "ActivePortUpdated")
 
 source.connect_signal(function(_, _)
 	source_label.text = volume_text(source.Mute, source.Volume[1], source.BaseVolume)
