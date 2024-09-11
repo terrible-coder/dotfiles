@@ -117,6 +117,13 @@ for i, path in ipairs(sink.Ports) do
 			}
 		}
 	})
+	item:buttons(
+		awful.button({ }, 1, function()
+			if path ~= active_port_path then
+				sink.ActivePort = path
+			end
+		end)
+	)
 	ports_layout:add(item)
 end
 

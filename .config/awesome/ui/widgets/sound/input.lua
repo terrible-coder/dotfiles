@@ -88,6 +88,13 @@ for i, path in ipairs(source.Ports) do
 			}
 		}
 	})
+	item:buttons(
+		awful.button({ }, 1, function()
+			if path ~= active_port_path then
+				source.ActivePort = path
+			end
+		end)
+	)
 	ports_layout:add(item)
 end
 
