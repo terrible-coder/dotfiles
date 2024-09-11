@@ -8,6 +8,7 @@ local gshape = require("gears.shape")
 local wibox = require("wibox")
 local naughty = require("naughty")
 
+local GLib = require("lgi").GLib
 local sound = require("sys.sound")
 
 local function volume_percent(volume, base_volume)
@@ -120,7 +121,7 @@ for i, path in ipairs(sink.Ports) do
 	item:buttons(
 		awful.button({ }, 1, function()
 			if path ~= active_port_path then
-				sink.ActivePort = path
+				sink.ActivePort = GLib.Variant.new("o", path)
 			end
 		end)
 	)

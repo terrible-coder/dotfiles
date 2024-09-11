@@ -8,6 +8,7 @@ local gshape = require("gears.shape")
 local wibox = require("wibox")
 local naughty = require("naughty")
 
+local GLib = require("lgi").GLib
 local sound = require("sys.sound")
 
 -- This function, in this file, is wrong. Precisely because it is wrong that we
@@ -91,7 +92,7 @@ for i, path in ipairs(source.Ports) do
 	item:buttons(
 		awful.button({ }, 1, function()
 			if path ~= active_port_path then
-				source.ActivePort = path
+				source.ActivePort = GLib.Variant.new("o", path)
 			end
 		end)
 	)
