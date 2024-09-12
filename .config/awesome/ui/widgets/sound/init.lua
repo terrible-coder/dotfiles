@@ -20,6 +20,7 @@ sound.ListenForSignal("org.PulseAudio.Core1.Device.ActivePortUpdated", {
 sound.ListenForSignal("org.PulseAudio.Core1.Device.StateUpdated", {
 	source.object_path,
 })
+sound.ListenForSignal("org.PulseAudio.Core1.DevicePort.AvailableChanged", { })
 
 return {
 	sink = sink_widget,

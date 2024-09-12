@@ -165,6 +165,11 @@ end, "MuteUpdated")
 source.connect_signal(function()
 	update_ports()
 end, "ActivePortUpdated")
+for _, p in ipairs(ports) do
+	p.connect_signal(function()
+		update_ports()
+	end, "AvailableChanged")
+end
 source.connect_signal(function(_, state)
 	if state == 0 then
 		source_icon.text = "󰍬"
