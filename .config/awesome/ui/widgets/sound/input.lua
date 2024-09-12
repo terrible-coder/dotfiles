@@ -69,35 +69,55 @@ local source_widget = wibox.widget({
 
 -- Record for when ActivePortUpdated. This is assuming that the order won't
 -- change.
-local port_paths = { }
+local ports = { }
+for i, path in ipairs(source.Ports) do
+	ports[i] = sound.DevicePort(path)
+end
 
 local ports_layout = wibox.layout.flex.vertical()
-local active_port_path = source.ActivePort
-for i, path in ipairs(source.Ports) do
-	port_paths[i] = path
+for _, p in ipairs(ports) do
 	local item = wibox.widget({
 		widget = wibox.container.background,
-		bg = path == active_port_path and beautiful.colors.iris or nil,
-		fg = path == active_port_path and beautiful.colors.hl_low or nil,
 		shape = function(cr, w, h) gshape.rounded_rect(cr, w, h, 2) end,
 		{
 			widget = wibox.container.margin,
 			left = dpi(5), right = dpi(5), top = dpi(2), bottom = dpi(2),
 			{
 				widget = wibox.widget.textbox,
-				text = sound.DevicePort(path).Description,
+				text = p.Description,
 			}
 		}
 	})
 	item:buttons(
 		awful.button({ }, 1, function()
-			if path ~= active_port_path then
-				source.ActivePort = GLib.Variant.new("o", path)
+			if p.Available == 1 then
+				return
+			end
+			if source.ActivePort ~= p.object_path then
+				source.ActivePort = GLib.Variant.new("o", p.object_path)
 			end
 		end)
 	)
 	ports_layout:add(item)
 end
+
+local function update_ports()
+	for i, p in ipairs(ports) do
+		local bg, fg = nil, nil
+		if p.Available == 1 then
+			bg = nil
+			fg = beautiful.colors.muted
+		else
+			if p.object_path == source.ActivePort then
+				bg = beautiful.colors.iris
+				fg = beautiful.colors.hl_low
+			end
+		end
+		ports_layout.children[i].bg = bg
+		ports_layout.children[i].fg = fg
+	end
+end
+update_ports()
 
 local source_popup = awful.popup({
 	widget = {
@@ -142,23 +162,8 @@ end, "VolumeUpdated")
 source.connect_signal(function(_, _)
 	source_label.text = volume_text(source.Mute, source.Volume[1], source.BaseVolume)
 end, "MuteUpdated")
-source.connect_signal(function(_, new_active)
-	active_port_path = new_active
-	for i, path in ipairs(port_paths) do
-		if path == active_port_path then
-			ports_layout.children[i].bg = beautiful.colors.iris
-			ports_layout.children[i].fg = beautiful.colors.hl_low
-			naughty.notify({
-				title = "Audio input",
-				text = ("Port change to '%s'"):format(
-					ports_layout.children[i].children[1].children[1].text
-				)
-			})
-		else
-			ports_layout.children[i].bg = nil
-			ports_layout.children[i].fg = nil
-		end
-	end
+source.connect_signal(function()
+	update_ports()
 end, "ActivePortUpdated")
 source.connect_signal(function(_, state)
 	if state == 0 then
