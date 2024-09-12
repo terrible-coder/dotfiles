@@ -166,7 +166,13 @@ function api.DevicePort(path)
 			then
 				return devport_obj:Get(DP_IFACE, k)
 			end
-			return devport_obj[k]
+			local value = devport_obj[k]
+			if type(value) == "function" then
+				return function(...)
+					return value(devport_obj, ...)
+				end
+			end
+			return value
 		end
 	})
 	return devport
