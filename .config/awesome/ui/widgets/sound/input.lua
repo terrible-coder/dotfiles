@@ -101,23 +101,27 @@ for _, p in ipairs(ports) do
 	ports_layout:add(item)
 end
 
-local function update_ports()
-	for i, p in ipairs(ports) do
-		local bg, fg = nil, nil
-		if p.Available == 1 then
-			bg = nil
-			fg = beautiful.colors.muted
-		else
-			if p.object_path == source.ActivePort then
-				bg = beautiful.colors.iris
-				fg = beautiful.colors.hl_low
-			end
+local function update_port(index, port)
+	local bg, fg = nil, nil
+	if port.Available == 1 then
+		bg = nil
+		fg = beautiful.colors.muted
+	else
+		if port.object_path == source.ActivePort then
+			bg = beautiful.colors.iris
+			fg = beautiful.colors.hl_low
 		end
-		ports_layout.children[i].bg = bg
-		ports_layout.children[i].fg = fg
+	end
+	ports_layout.children[index].bg = bg
+	ports_layout.children[index].fg = fg
+end
+
+local function update_all_ports()
+	for i, p in ipairs(ports) do
+		update_port(i, p)
 	end
 end
-update_ports()
+update_all_ports()
 
 local source_popup = awful.popup({
 	widget = {
@@ -163,11 +167,11 @@ source.connect_signal(function(_, _)
 	source_label.text = volume_text(source.Mute, source.Volume[1], source.BaseVolume)
 end, "MuteUpdated")
 source.connect_signal(function()
-	update_ports()
+	update_all_ports()
 end, "ActivePortUpdated")
-for _, p in ipairs(ports) do
+for i, p in ipairs(ports) do
 	p.connect_signal(function()
-		update_ports()
+		update_port(i, p)
 	end, "AvailableChanged")
 end
 source.connect_signal(function(_, state)
