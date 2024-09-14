@@ -152,7 +152,36 @@ local sink_popup = awful.popup({
 	widget = {
 		widget = wibox.container.margin,
 		margins = dpi(5),
-		ports_layout,
+		{
+			layout = wibox.layout.fixed.vertical,
+			spacing = dpi(5),
+			{
+				widget = wibox.widget.textbox,
+				markup = "<b>Audio output</b>",
+			},
+			{
+				widget = wibox.widget.textbox,
+				text = sink.PropertyList["device.description"]
+			},
+			{
+				layout = wibox.layout.fixed.horizontal,
+				spacing = dpi(10),
+				{
+					widget = wibox.container.background,
+					bg = beautiful.colors.overlay,
+					{
+						widget = wibox.container.margin,
+						margins = dpi(5),
+						{
+							widget = wibox.widget.textbox,
+							valign = "top",
+							text = "Ports",
+						},
+					},
+				},
+				ports_layout,
+			},
+		},
 	},
 	shape = function(cr, w, h) gshape.rounded_rect(cr, w, h, 5) end,
 	border_width = dpi(2),
