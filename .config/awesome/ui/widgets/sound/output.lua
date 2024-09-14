@@ -66,35 +66,37 @@ local sink_widget = wibox.widget({
 	}
 })
 
--- local slider = wibox.widget({
--- 	widget = wibox.widget.slider,
--- 	bar_height = 2, bar_width = 30,
--- 	bar_shape = gshape.rounded_bar,
--- 	handle_shape = function(cr, w, h) gshape.circle(cr, w, h, 5) end,
--- 	handle_width = 5,
--- 	handle_margins = { top = 2, bottom = 2 },
--- 	minimum = 0, maximum = 100,
--- 	forced_width = 120, forced_height = 5,
--- 	value = 0,
--- })
--- 
--- local text_label = wibox.widget.textbox("00")
--- 
--- -- prevent flooding system with mutliple calls to external programmes
--- local slider_drag = true
--- slider:connect_signal("property::value", function(self)
--- 	slider_drag = true
--- 	text_label.text = ("%02d%%"):format(self.value)
--- end)
--- 
--- -- this trigger is fired relying solely on
--- -- https://github.com/awesomeWM/awesome/issues/1241#issuecomment-264109466
--- -- does not work in v4.3
--- slider:connect_signal("button::release", function()
--- 		if not slider_drag then return end
--- 		slider_drag = false
--- 		server:change(slider.value - server.volume)
--- end)
+local slider = wibox.widget({
+	widget = wibox.widget.slider,
+	bar_height = dpi(2),
+	bar_shape = gshape.rounded_bar,
+	bar_color = beautiful.colors.pine,
+	handle_shape = function(cr, w, h) gshape.rounded_rect(cr, w, h, 2) end,
+	handle_width = dpi(10),
+	handle_margins = { top = 2, bottom = 2 },
+	minimum = 0, maximum = 100,
+	forced_width = dpi(120), forced_height = dpi(15),
+	value = 0,
+})
+
+local text_label = wibox.widget.textbox("00")
+
+-- prevent flooding system with mutliple calls to external programmes
+local slider_drag = true
+slider:connect_signal("property::value", function(self)
+	slider_drag = true
+	text_label.text = ("%02d%%"):format(self.value)
+end)
+
+-- this trigger is fired relying solely on
+-- https://github.com/awesomeWM/awesome/issues/1241#issuecomment-264109466
+-- does not work in v4.3
+slider:connect_signal("button::release", function()
+	if not slider_drag then return end
+	slider_drag = false
+end)
+
+slider.value = volume_percent(sink.Volume[1], sink.BaseVolume)
 
 -- Record for when ActivePortUpdated. This is assuming that the order won't
 -- change.
@@ -151,13 +153,24 @@ update_ports()
 local sink_popup = awful.popup({
 	widget = {
 		widget = wibox.container.margin,
-		margins = dpi(5),
+		margins = dpi(10),
 		{
 			layout = wibox.layout.fixed.vertical,
 			spacing = dpi(5),
 			{
-				widget = wibox.widget.textbox,
-				markup = "<b>Audio output</b>",
+				layout = wibox.layout.align.horizontal,
+				spacing = dpi(20),
+				{
+					widget = wibox.widget.textbox,
+					markup = "<b>Audio output</b>",
+				},
+				nil,
+				text_label,
+			},
+			{
+				widget = wibox.container.margin,
+				top = dpi(5), bottom = dpi(5),
+				slider,
 			},
 			{
 				widget = wibox.widget.textbox,
