@@ -152,49 +152,45 @@ update_ports()
 
 local sink_popup = awful.popup({
 	widget = {
-		widget = wibox.container.margin,
-		margins = dpi(10),
+		widget = wibox.container.background,
+		bg = beautiful.colors.overlay,
 		{
-			layout = wibox.layout.fixed.vertical,
-			spacing = dpi(5),
+			widget = wibox.container.margin,
+			margins = dpi(10),
 			{
-				layout = wibox.layout.align.horizontal,
-				spacing = dpi(20),
+				layout = wibox.layout.fixed.vertical,
+				spacing = dpi(5),
+				{
+					layout = wibox.layout.align.horizontal,
+					spacing = dpi(20),
+					{
+						widget = wibox.widget.textbox,
+						markup = "<b>Audio output</b>",
+					},
+					nil,
+					text_label,
+				},
+				{
+					widget = wibox.container.margin,
+					top = dpi(5), bottom = dpi(5),
+					slider,
+				},
 				{
 					widget = wibox.widget.textbox,
-					markup = "<b>Audio output</b>",
+					text = sink.PropertyList["device.description"]
 				},
-				nil,
-				text_label,
-			},
-			{
-				widget = wibox.container.margin,
-				top = dpi(5), bottom = dpi(5),
-				slider,
-			},
-			{
-				widget = wibox.widget.textbox,
-				text = sink.PropertyList["device.description"]
-			},
-			{
-				layout = wibox.layout.fixed.horizontal,
-				spacing = dpi(10),
 				{
-					widget = wibox.container.background,
-					bg = beautiful.colors.overlay,
+					layout = wibox.layout.fixed.horizontal,
+					spacing = dpi(10),
 					{
-						widget = wibox.container.margin,
-						margins = dpi(5),
-						{
-							widget = wibox.widget.textbox,
-							valign = "top",
-							text = "Ports",
-						},
+						widget = wibox.widget.textbox,
+						valign = "top",
+						text = "Ports:",
 					},
+					ports_layout,
 				},
-				ports_layout,
 			},
-		},
+		}
 	},
 	shape = function(cr, w, h) gshape.rounded_rect(cr, w, h, 5) end,
 	border_width = dpi(2),
