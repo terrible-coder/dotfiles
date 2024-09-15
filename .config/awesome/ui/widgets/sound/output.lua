@@ -1,0 +1,242 @@
+local Capi = {
+	awesome = awesome
+}
+local awful = require("awful")
+local beautiful = require("beautiful")
+local dpi = beautiful.xresources.apply_dpi
+local gshape = require("gears.shape")
+local wibox = require("wibox")
+local naughty = require("naughty")
+
+local GLib = require("lgi").GLib
+local sound = require("sys.sound")
+
+local function volume_percent(volume, base_volume)
+	return math.ceil(100 * volume / base_volume)
+end
+
+local function volume_text(mute, volume, base_volume)
+	if mute then
+		return "Muted"
+	else
+		return volume_percent(volume, base_volume)
+	end
+end
+
+local sink_path = sound.GetSinkByName("@DEFAULT_SINK@")
+local sink = sound.Device(sink_path)
+
+local sink_label = wibox.widget.textbox()
+sink_label.text = volume_text(sink.Mute, sink.Volume[1], sink.BaseVolume)
+local sink_icon = wibox.widget.textbox("")
+sink_icon.font = beautiful.fonts.nerd..16
+
+local partial = {
+	left = function(cr, w, h)
+		gshape.partially_rounded_rect(cr, w, h, true, false, false, true, dpi(2))
+	end,
+	right = function(cr, w, h)
+		gshape.partially_rounded_rect(cr, w, h, false, true, true, false, dpi(2))
+	end
+}
+
+local sink_widget = wibox.widget({
+	layout = wibox.layout.fixed.horizontal,
+	{
+		widget = wibox.container.background,
+		shape = partial.left,
+		fg = beautiful.colors.hl_low, bg = beautiful.colors.foam,
+		{
+			widget = wibox.container.margin,
+			left = dpi(4), right = dpi(3), top = dpi(2), bottom = dpi(2),
+			sink_icon,
+		}
+	},
+	{
+		widget = wibox.container.background,
+		bg = beautiful.colors.hl_low,
+		shape = partial.right,
+		shape_border_width = dpi(1),
+		shape_border_color = beautiful.colors.foam,
+		{
+			widget = wibox.container.margin,
+			left = dpi(7), right = dpi(5),
+			sink_label,
+		}
+	}
+})
+
+local slider = wibox.widget({
+	widget = wibox.widget.slider,
+	bar_height = dpi(2),
+	bar_shape = gshape.rounded_bar,
+	bar_color = beautiful.colors.pine,
+	handle_shape = function(cr, w, h) gshape.rounded_rect(cr, w, h, 2) end,
+	handle_width = dpi(10),
+	handle_margins = { top = 2, bottom = 2 },
+	minimum = 0, maximum = 100,
+	forced_width = dpi(120), forced_height = dpi(15),
+	value = 0,
+})
+
+local text_label = wibox.widget.textbox("00")
+
+-- prevent flooding system with mutliple calls to external programmes
+local slider_drag = true
+slider:connect_signal("property::value", function(self)
+	slider_drag = true
+	text_label.text = ("%02d%%"):format(self.value)
+end)
+
+-- this trigger is fired relying solely on
+-- https://github.com/awesomeWM/awesome/issues/1241#issuecomment-264109466
+-- does not work in v4.3
+slider:connect_signal("button::release", function()
+	if not slider_drag then return end
+	slider_drag = false
+	local new_volume = math.floor(sink.BaseVolume * slider.value / 100)
+	sink.Volume = GLib.Variant.new("au", { new_volume, new_volume })
+end)
+
+slider.value = volume_percent(sink.Volume[1], sink.BaseVolume)
+
+-- Record for when ActivePortUpdated. This is assuming that the order won't
+-- change.
+local ports = { }
+for i, path in ipairs(sink.Ports) do
+	ports[i] = sound.DevicePort(path)
+end
+
+local ports_layout = wibox.layout.flex.vertical()
+for _, p in ipairs(ports) do
+	local item = wibox.widget({
+		widget = wibox.container.background,
+		shape = function(cr, w, h) gshape.rounded_rect(cr, w, h, 2) end,
+		{
+			widget = wibox.container.margin,
+			left = dpi(5), right = dpi(5), top = dpi(2), bottom = dpi(2),
+			{
+				widget = wibox.widget.textbox,
+				text = p.Description,
+			}
+		}
+	})
+	item:buttons(
+		awful.button({ }, 1, function()
+			if p.Available == 1 then
+				return
+			end
+			if sink.ActivePort ~= p.object_path then
+				sink.ActivePort = GLib.Variant.new("o", p.object_path)
+			end
+		end)
+	)
+	ports_layout:add(item)
+end
+
+local function update_ports()
+	for i, p in ipairs(ports) do
+		local bg, fg = nil, nil
+		if p.Available == 1 then
+			bg = nil
+			fg = beautiful.colors.muted
+		else
+			if p.object_path == sink.ActivePort then
+				bg = beautiful.colors.iris
+				fg = beautiful.colors.hl_low
+			end
+		end
+		ports_layout.children[i].bg = bg
+		ports_layout.children[i].fg = fg
+	end
+end
+update_ports()
+
+local sink_popup = awful.popup({
+	widget = {
+		widget = wibox.container.background,
+		bg = beautiful.colors.overlay,
+		{
+			widget = wibox.container.margin,
+			margins = dpi(10),
+			{
+				layout = wibox.layout.fixed.vertical,
+				spacing = dpi(5),
+				{
+					layout = wibox.layout.align.horizontal,
+					spacing = dpi(20),
+					{
+						widget = wibox.widget.textbox,
+						markup = "<b>Audio output</b>",
+					},
+					nil,
+					text_label,
+				},
+				{
+					widget = wibox.container.margin,
+					top = dpi(5), bottom = dpi(5),
+					slider,
+				},
+				{
+					widget = wibox.widget.textbox,
+					text = sink.PropertyList["device.description"]
+				},
+				{
+					layout = wibox.layout.fixed.horizontal,
+					spacing = dpi(10),
+					{
+						widget = wibox.widget.textbox,
+						valign = "top",
+						text = "Ports:",
+					},
+					ports_layout,
+				},
+			},
+		}
+	},
+	shape = function(cr, w, h) gshape.rounded_rect(cr, w, h, 5) end,
+	border_width = dpi(2),
+	border_color = beautiful.colors.iris,
+	ontop = true,
+	visible = false,
+})
+
+sink_popup.uid = 220
+
+sink_widget:buttons(
+	awful.button({ }, 1,
+	function()
+		Capi.awesome.emit_signal("popup_show", sink_popup.uid)
+	end)
+)
+
+Capi.awesome.connect_signal("popup_show", function(uid)
+	if uid == sink_popup.uid then
+		sink_popup.visible = not sink_popup.visible
+	else
+		sink_popup.visible = false
+	end
+	if not sink_popup.visible then return end
+	awful.placement.next_to(sink_popup, {
+		preferred_positions = { "bottom" },
+		preferred_anchors = { "middle" },
+		mode = "cursor_inside",
+		offset = { y = 5 },
+	})
+end)
+
+sink.connect_signal(function(_, _)
+	sink_label.text = volume_text(sink.Mute, sink.Volume[1], sink.BaseVolume)
+	slider.value = volume_percent(sink.Volume[1], sink.BaseVolume)
+end, "VolumeUpdated")
+sink.connect_signal(function(_, _)
+	sink_label.text = volume_text(sink.Mute, sink.Volume[1], sink.BaseVolume)
+end, "MuteUpdated")
+sink.connect_signal(function()
+	update_ports()
+end, "ActivePortUpdated")
+
+return {
+	widget = sink_widget,
+	object = sink
+}

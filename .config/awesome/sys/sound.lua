@@ -161,10 +161,18 @@ function api.DevicePort(path)
 				k == "Index" or
 				k == "Name" or
 				k == "Description" or
-				k == "Priority"
+				k == "Priority" or
+				k == "Available"
 			then
 				return devport_obj:Get(DP_IFACE, k)
 			end
+			local value = devport_obj[k]
+			if type(value) == "function" then
+				return function(...)
+					return value(devport_obj, ...)
+				end
+			end
+			return value
 		end
 	})
 	return devport
