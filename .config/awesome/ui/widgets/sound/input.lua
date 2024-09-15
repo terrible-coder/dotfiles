@@ -95,6 +95,10 @@ end)
 slider:connect_signal("button::release", function()
 	if not slider_drag then return end
 	slider_drag = false
+	-- This calculation is wrong for the same reason the volume_percent function
+	-- is wrong. Check function comment.
+	local new_volume = math.floor(source.BaseVolume * slider.value / 10)
+	source.Volume = GLib.Variant.new("au", { new_volume, new_volume })
 end)
 
 slider.value = volume_percent(source.Volume[1], source.BaseVolume)
@@ -230,6 +234,7 @@ end)
 
 source.connect_signal(function(_, _)
 	source_label.text = volume_text(source.Mute, source.Volume[1], source.BaseVolume)
+	slider.value = volume_percent(source.Volume[1], source.BaseVolume)
 end, "VolumeUpdated")
 source.connect_signal(function(_, _)
 	source_label.text = volume_text(source.Mute, source.Volume[1], source.BaseVolume)

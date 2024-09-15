@@ -94,6 +94,8 @@ end)
 slider:connect_signal("button::release", function()
 	if not slider_drag then return end
 	slider_drag = false
+	local new_volume = math.floor(sink.BaseVolume * slider.value / 100)
+	sink.Volume = GLib.Variant.new("au", { new_volume, new_volume })
 end)
 
 slider.value = volume_percent(sink.Volume[1], sink.BaseVolume)
@@ -225,6 +227,7 @@ end)
 
 sink.connect_signal(function(_, _)
 	sink_label.text = volume_text(sink.Mute, sink.Volume[1], sink.BaseVolume)
+	slider.value = volume_percent(sink.Volume[1], sink.BaseVolume)
 end, "VolumeUpdated")
 sink.connect_signal(function(_, _)
 	sink_label.text = volume_text(sink.Mute, sink.Volume[1], sink.BaseVolume)
