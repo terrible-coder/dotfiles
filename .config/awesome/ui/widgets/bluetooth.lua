@@ -41,11 +41,13 @@ local power_status = wibox.widget({
 		widget = wibox.container.margin,
 		left = dpi(5), right = dpi(5), top = dpi(2), bottom = dpi(2),
 		{
-			widget = wibox.widget.textbox, id = "bluetooth_power",
+			widget = wibox.widget.textbox,
+			font = beautiful.fonts.nerd..12,
+			text = "󰐥",
 		}
 	},
-	set_text = function(self, text)
-		self:get_children_by_id("bluetooth_power")[1].text = "Powered: "..text
+	set_power = function(self, powered)
+		self.bg = powered and beautiful.colors.love or beautiful.colors.pine
 	end
 })
 power_status:buttons(
@@ -91,8 +93,7 @@ discoverable_status:buttons(
 
 bluetooth:GetAsync(
 	function(_, _, powered)
-		local text = powered and "on" or "off"
-		power_status.text = text
+		power_status.power = powered
 	end, nil, "org.bluez.Adapter1", "Powered"
 )
 bluetooth:GetAsync(
@@ -113,8 +114,13 @@ local blue_popup = awful.popup({
 				layout = wibox.layout.fixed.vertical,
 				spacing = dpi(5),
 				{
-					widget = wibox.widget.textbox,
-					markup = "<b>Bluetooth</b>",
+					layout = wibox.layout.align.horizontal,
+					{
+						widget = wibox.widget.textbox,
+						markup = "<b>Bluetooth</b>",
+					},
+					nil,
+					power_status
 				},
 				{
 					widget = wibox.widget.textbox,
@@ -122,7 +128,7 @@ local blue_popup = awful.popup({
 						bluetooth:Get("org.bluez.Adapter1", "Name"),
 						bluetooth:Get("org.bluez.Adapter1", "Address"))
 				},
-				power_status, discoverable_status,
+				discoverable_status,
 			}
 		}
 	},
@@ -166,7 +172,7 @@ bluetooth:connect_signal(function(_, _, changed)
 			text = "Switched " .. text
 		})
 		wgt_icon.text = changed.Powered and icons.ON or icons.OFF
-		power_status.text = text
+		power_status.power = changed.Powered
 	end
 
 	if changed.Discoverable ~= nil then
