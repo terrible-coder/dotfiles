@@ -1,3 +1,6 @@
+local Capi = {
+	awesome = awesome,
+}
 local GLib = require("lgi").GLib
 local awful = require("awful")
 local gshape = require("gears.shape")
@@ -18,39 +21,34 @@ local wgt_icon = wibox.widget.textbox(
 	bluetooth:Get("org.bluez.Adapter1", "Powered") and icons.ON or icons.OFF
 )
 wgt_icon.font = beautiful.fonts.nerd..12
-local wgt_label = wibox.widget.textbox("off")
 
 local bar_widget = wibox.widget({
-	layout = wibox.layout.fixed.horizontal,
+	widget = wibox.container.background,
+	shape = function(cr, w, h) gshape.rounded_rect(cr, w, h, dpi(2)) end,
+	fg = beautiful.colors.hl_low, bg = beautiful.colors.foam,
 	{
-		widget = wibox.container.background,
-		shape = function(cr, w, h)
-			gshape.partially_rounded_rect(cr, w, h, true, false, false, true, dpi(2))
-		end,
-		fg = beautiful.colors.hl_low, bg = beautiful.colors.foam,
-		{
-			widget = wibox.container.margin,
-			left = dpi(4), right = dpi(3), top = dpi(2), bottom = dpi(2),
-			wgt_icon,
-		}
-	},
-	{
-		widget = wibox.container.background,
-		bg = beautiful.colors.hl_low,
-		shape = function(cr, w, h)
-			gshape.partially_rounded_rect(cr, w, h, false, true, true, false, dpi(2))
-		end,
-		shape_border_width = dpi(1),
-		shape_border_color = beautiful.colors.foam,
-		{
-			widget = wibox.container.margin,
-			left = dpi(7), right = dpi(5),
-			wgt_label,
-		}
+		widget = wibox.container.margin,
+		left = dpi(5), right = dpi(5), top = dpi(2), bottom = dpi(2),
+		wgt_icon,
 	}
 })
 
-bar_widget:buttons(
+local power_status = wibox.widget({
+	widget = wibox.container.background,
+	bg = beautiful.colors.iris, fg = beautiful.colors.hl_low,
+	shape = function(cr, w, h) gshape.rounded_rect(cr, w, h, 2) end,
+	{
+		widget = wibox.container.margin,
+		left = dpi(5), right = dpi(5), top = dpi(2), bottom = dpi(2),
+		{
+			widget = wibox.widget.textbox, id = "bluetooth_power",
+		}
+	},
+	set_text = function(self, text)
+		self:get_children_by_id("bluetooth_power")[1].text = "Powered: "..text
+	end
+})
+power_status:buttons(
 	awful.button({ }, 1, function()
 		local iface = "org.bluez.Adapter1"
 		bluetooth:GetAsync(
@@ -63,13 +61,77 @@ bar_widget:buttons(
 	end)
 )
 
+bluetooth:GetAsync(
+	function(_, _, powered)
+		local text = powered and "on" or "off"
+		power_status.text = text
+	end, nil, "org.bluez.Adapter1", "Powered"
+)
+
+local blue_popup = awful.popup({
+	widget = {
+		widget = wibox.container.background,
+		bg = beautiful.colors.overlay,
+		{
+			widget = wibox.container.margin,
+			margins = dpi(10),
+			{
+				layout = wibox.layout.fixed.vertical,
+				spacing = dpi(5),
+				{
+					widget = wibox.widget.textbox,
+					markup = "<b>Bluetooth</b>",
+				},
+				{
+					widget = wibox.widget.textbox,
+					text = string.format("%s (%s)",
+						bluetooth:Get("org.bluez.Adapter1", "Name"),
+						bluetooth:Get("org.bluez.Adapter1", "Address"))
+				},
+				power_status,
+			}
+		}
+	},
+	shape = function(cr, w, h) gshape.rounded_rect(cr, w, h, 5) end,
+	border_width = dpi(2),
+	border_color = beautiful.colors.iris,
+	ontop = true,
+	visible = false,
+})
+
+blue_popup.uid = 202
+
+bar_widget:buttons(
+	awful.button({ }, 1, function()
+		Capi.awesome.emit_signal("popup_show", blue_popup.uid)
+	end)
+)
+
+Capi.awesome.connect_signal("popup_show", function(uid)
+	if uid == blue_popup.uid then
+		blue_popup.visible = not blue_popup.visible
+	else
+		blue_popup.visible = false
+		return
+	end
+	if not blue_popup.visible then return end
+	awful.placement.next_to(blue_popup, {
+		preferred_positions = { "bottom" },
+		preferred_anchors = { "middle" },
+		mode = "cursor_inside",
+		offset = { y = 5 },
+	})
+end)
+
 bluetooth:connect_signal(function(_, _, changed)
 	if changed.Powered ~= nil then
+		local text = changed.Powered and "on" or "off"
 		naughty.notify({
 			title = "Bluetooth",
-			text = "Switched " .. (changed.Powered and "on" or "off")
+			text = "Switched " .. text
 		})
 		wgt_icon.text = changed.Powered and icons.ON or icons.OFF
+		power_status.text = text
 	end
 end, "PropertiesChanged")
 
