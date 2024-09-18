@@ -61,11 +61,45 @@ power_status:buttons(
 	end)
 )
 
+local discoverable_status = wibox.widget({
+	widget = wibox.container.background,
+	{
+		widget = wibox.container.margin,
+		left = dpi(5), right = dpi(5), top = dpi(2), bottom = dpi(2),
+		{
+			widget = wibox.widget.textbox, id = "discoverable",
+		}
+	},
+	set_text = function(self, text)
+		self:get_children_by_id("discoverable")[1].text = "Discoverable: "..text
+	end
+})
+discoverable_status:buttons(
+	awful.button({ }, 1, function()
+		local iface = "org.bluez.Adapter1"
+		bluetooth:GetAsync(
+			function (proxy, _, discoverable)
+				proxy:SetAsync(
+					function() end, nil,
+					iface, "Discoverable", GLib.Variant.new_boolean(not discoverable)
+				)
+			end, nil,
+			iface, "Discoverable"
+		)
+	end)
+)
+
 bluetooth:GetAsync(
 	function(_, _, powered)
 		local text = powered and "on" or "off"
 		power_status.text = text
 	end, nil, "org.bluez.Adapter1", "Powered"
+)
+bluetooth:GetAsync(
+	function(_, _, discoverable)
+		local text = discoverable and "yes" or "no"
+		discoverable_status.text = text
+	end, nil, "org.bluez.Adapter1", "Discoverable"
 )
 
 local blue_popup = awful.popup({
@@ -88,7 +122,7 @@ local blue_popup = awful.popup({
 						bluetooth:Get("org.bluez.Adapter1", "Name"),
 						bluetooth:Get("org.bluez.Adapter1", "Address"))
 				},
-				power_status,
+				power_status, discoverable_status,
 			}
 		}
 	},
@@ -133,6 +167,16 @@ bluetooth:connect_signal(function(_, _, changed)
 		})
 		wgt_icon.text = changed.Powered and icons.ON or icons.OFF
 		power_status.text = text
+	end
+
+	if changed.Discoverable ~= nil then
+		local text = changed.Discoverable and "yes" or "no"
+		local is_visible = changed.Discoverable and "Visible" or "No longer visible"
+		naughty.notify({
+			title = "Bluetooth",
+			text = is_visible .. " to nearby devices"
+		})
+		discoverable_status.text = text
 	end
 end, "PropertiesChanged")
 
