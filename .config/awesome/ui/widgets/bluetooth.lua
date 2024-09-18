@@ -95,6 +95,7 @@ local blue_popup = awful.popup({
 	shape = function(cr, w, h) gshape.rounded_rect(cr, w, h, 5) end,
 	border_width = dpi(2),
 	border_color = beautiful.colors.iris,
+	placement = { },
 	ontop = true,
 	visible = false,
 })
