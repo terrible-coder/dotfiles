@@ -52,9 +52,14 @@ local bar_widget = wibox.widget({
 
 bar_widget:buttons(
 	awful.button({ }, 1, function()
-		bluetooth:Set("org.bluez.Adapter1", "Powered",
-			GLib.Variant.new("b", not bluetooth:Get("org.bluez.Adapter1", "Powered"))
-		)
+		local iface = "org.bluez.Adapter1"
+		bluetooth:GetAsync(
+			function (_, _, powered)
+				bluetooth:SetAsync(
+					function() end, nil,
+					iface, "Powered", GLib.Variant.new_boolean(not powered))
+			end, nil,
+			iface, "Powered")
 	end)
 )
 
