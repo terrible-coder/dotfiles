@@ -47,6 +47,7 @@ return function(s)
 				layout = wibox.layout.fixed.horizontal,
 				spacing = 5,
 				widgets.network,
+				widgets.bluetooth,
 				separator,
 				widgets.brightness,
 				widgets.sound.sink,
