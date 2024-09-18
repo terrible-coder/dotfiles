@@ -94,6 +94,11 @@ discoverable_status:buttons(
 bluetooth:GetAsync(
 	function(_, _, powered)
 		power_status.power = powered
+		if powered then
+			discoverable_status.fg = nil
+		else
+			discoverable_status.fg = beautiful.colors.muted
+		end
 	end, nil, "org.bluez.Adapter1", "Powered"
 )
 bluetooth:GetAsync(
@@ -171,7 +176,13 @@ bluetooth:connect_signal(function(_, _, changed)
 			title = "Bluetooth",
 			text = "Switched " .. text
 		})
-		wgt_icon.text = changed.Powered and icons.ON or icons.OFF
+		if changed.Powered then
+			wgt_icon.text = icons.ON
+			discoverable_status.fg = nil
+		else
+			wgt_icon.text = icons.OFF
+			discoverable_status.fg = beautiful.colors.muted
+		end
 		power_status.power = changed.Powered
 	end
 
