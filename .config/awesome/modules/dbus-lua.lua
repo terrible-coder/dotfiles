@@ -86,6 +86,20 @@ function Proxy.new(obj, iface)
 	for _, method in ipairs(iface_info.methods) do
 		p[method.name] = Proxy.generate_method(proxy, method)
 	end
+	p.on = { }
+	for _, signal in ipairs(iface_info.signals) do
+		p.on[signal.name] = setmetatable({ }, {
+			__call = function(tbl, callback)
+				table.insert(tbl, callback)
+			end
+		})
+	end
+	function proxy:on_g_signal(sender, signal, params)
+		-- if sender ~= obj.name then return end
+		for _, handler in ipairs(p.on[signal]) do
+			handler(table.unpack(Variant.unpack(params)))
+		end
+	end
 	return setmetatable(p, {
 		__index = function(_, key)
 			return Variant.unpack(proxy:get_cached_property(key))
