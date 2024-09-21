@@ -123,5 +123,6 @@ end
 return {
 	Bus = Bus,
 	Variant = Variant,
-	Proxy = Proxy
+	ObjectProxy = ObjectProxy,
+	Proxy = Proxy,
 }
