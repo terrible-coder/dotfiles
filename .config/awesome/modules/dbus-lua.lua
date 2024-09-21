@@ -82,7 +82,7 @@ function Proxy.new(obj, iface)
 		obj.object_path,
 		iface
 	)
-	local p = { _obj = proxy }
+	local p = { }
 	for _, method in ipairs(iface_info.methods) do
 		p[method.name] = Proxy.generate_method(proxy, method)
 	end
