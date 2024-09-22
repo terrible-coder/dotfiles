@@ -82,23 +82,23 @@ function Proxy.new(obj, iface)
 		obj.object_path,
 		iface
 	)
-	local p = { }
+	local p = {
+		object_path = obj.object_path,
+		interface = iface,
+	}
 	for _, method in ipairs(iface_info.methods) do
 		p[method.name] = Proxy.generate_method(proxy, method)
 	end
+	local meta_call = {
+		__call = function(tbl, callback)
+			table.insert(tbl, callback)
+		end
+	}
 	p.on = { }
 	for _, signal in ipairs(iface_info.signals) do
-		p.on[signal.name] = setmetatable({ }, {
-			__call = function(tbl, callback)
-				table.insert(tbl, callback)
-			end
-		})
+		p.on[signal.name] = setmetatable({ }, meta_call)
 	end
-	p.on.PropertiesChanged = setmetatable({ }, {
-			__call = function(tbl, callback)
-				table.insert(tbl, callback)
-			end
-	})
+	p.on.PropertiesChanged = setmetatable({ }, meta_call)
 	function proxy:on_g_signal(sender, signal, params)
 		-- if sender ~= obj.name then return end
 		for _, handler in ipairs(p.on[signal]) do
@@ -109,6 +109,12 @@ function Proxy.new(obj, iface)
 		for _, prop_handler in ipairs(p.on.PropertiesChanged) do
 			prop_handler(Variant.unpack(changed), invalidated)
 		end
+	end
+	function p.on.destroy()
+		for _, signal in ipairs(iface_info.signals) do
+			p.on[signal.name] = setmetatable({ }, meta_call)
+		end
+		p.on.PropertiesChanged = setmetatable({ }, meta_call)
 	end
 	return setmetatable(p, {
 		__index = function(_, key)
