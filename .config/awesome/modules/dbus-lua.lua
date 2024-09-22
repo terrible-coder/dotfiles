@@ -61,7 +61,10 @@ function Proxy.generate_method(proxy, method)
 		Gio.DBusCallFlags.NONE,
 		DEFAULT_TIMEOUT
 		))
-		return #result == 1 and result[1] or result
+		if #result == 1 then
+			return result[1]
+		end
+		return result
 	end
 end
 function Proxy.generate_property(proxy, property)
