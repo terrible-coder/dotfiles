@@ -94,10 +94,20 @@ function Proxy.new(obj, iface)
 			end
 		})
 	end
+	p.on.PropertiesChanged = setmetatable({ }, {
+			__call = function(tbl, callback)
+				table.insert(tbl, callback)
+			end
+	})
 	function proxy:on_g_signal(sender, signal, params)
 		-- if sender ~= obj.name then return end
 		for _, handler in ipairs(p.on[signal]) do
 			handler(table.unpack(Variant.unpack(params)))
+		end
+	end
+	function proxy:on_g_properties_changed(changed, invalidated)
+		for _, prop_handler in ipairs(p.on.PropertiesChanged) do
+			prop_handler(Variant.unpack(changed), invalidated)
 		end
 	end
 	return setmetatable(p, {
