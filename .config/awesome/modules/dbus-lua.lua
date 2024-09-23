@@ -68,7 +68,7 @@ function Proxy.generate_sync_method(proxy, method)
 	end
 end
 function Proxy.generate_async_method(proxy, method)
-	return function(self, callback, ...)
+	return function(self, callback, user_data, ...)
 		proxy:call(
 			method.name,
 			Variant.params(method, ...),
@@ -78,14 +78,14 @@ function Proxy.generate_async_method(proxy, method)
 			function(source_obj, res)
 				local result, err = source_obj:call_finish(res)
 				if not result and err then
-					callback(result, err)
+					callback(user_data, result, err)
 					return
 				end
 				result = Variant.unpack(result)
 				if #result == 1 then
-					callback(result[1])
+					callback(user_data, result[1])
 				else
-					callback(result)
+					callback(user_data, result)
 				end
 			end,
 			nil
