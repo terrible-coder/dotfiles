@@ -53,7 +53,7 @@ local DEFAULT_TIMEOUT = -1
 local introspection_type = GLib.VariantType.new("(s)")
 
 local Proxy = { }
-function Proxy.generate_method(proxy, method)
+function Proxy.generate_sync_method(proxy, method)
 	return function(self, ...)
 		local result = Variant.unpack(proxy:call_sync(
 		method.name,
@@ -65,6 +65,31 @@ function Proxy.generate_method(proxy, method)
 			return result[1]
 		end
 		return result
+	end
+end
+function Proxy.generate_async_method(proxy, method)
+	return function(self, callback, ...)
+		proxy:call(
+			method.name,
+			Variant.params(method, ...),
+			Gio.DBusCallFlags.NONE,
+			DEFAULT_TIMEOUT,
+			nil,
+			function(source_obj, res)
+				local result, err = source_obj:call_finish(res)
+				if not result and err then
+					callback(result, err)
+					return
+				end
+				result = Variant.unpack(result)
+				if #result == 1 then
+					callback(result[1])
+				else
+					callback(result)
+				end
+			end,
+			nil
+		)
 	end
 end
 function Proxy.generate_property(proxy, property)
@@ -90,7 +115,8 @@ function Proxy.new(obj, iface)
 		interface = iface,
 	}
 	for _, method in ipairs(iface_info.methods) do
-		p[method.name] = Proxy.generate_method(proxy, method)
+		p[method.name] = Proxy.generate_sync_method(proxy, method)
+		p[method.name.."Async"] = Proxy.generate_async_method(proxy, method)
 	end
 	local meta_call = {
 		__call = function(tbl, callback)
