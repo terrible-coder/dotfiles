@@ -29,6 +29,9 @@ function Variant.params(method, ...)
 end
 
 function Variant.unpack(variant)
+	if not tostring(variant):match("GLib%.Variant$") then
+		return variant
+	end
 	if variant:is_of_type(GLib.VariantType.VARIANT) then
 		return Variant.unpack(variant.value)
 	end
