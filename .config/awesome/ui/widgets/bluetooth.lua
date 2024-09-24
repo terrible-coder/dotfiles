@@ -9,7 +9,15 @@ local beautiful = require("beautiful")
 local dpi = beautiful.xresources.apply_dpi
 local naughty = require("naughty")
 
-local bluetooth = require("sys.bluetooth")
+local dbus = require("modules.dbus-lua")
+local bluetooth = require("sys").bluetooth
+local IFACE = {
+	properties = "org.freedesktop.DBus.Properties",
+	adapter = bluetooth.base..".Adapter1",
+}
+local bl_obj = bluetooth.object
+local bl_adapter = bl_obj:implement(IFACE.adapter)
+local bl_props = bl_obj:implement(IFACE.properties)
 
 local icons = {
 	ON = "󰂯",
@@ -18,7 +26,7 @@ local icons = {
 }
 
 local wgt_icon = wibox.widget.textbox(
-	bluetooth:Get("org.bluez.Adapter1", "Powered") and icons.ON or icons.OFF
+	bl_adapter.Powered and icons.ON or icons.OFF
 )
 wgt_icon.font = beautiful.fonts.nerd..12
 
@@ -52,14 +60,13 @@ local power_status = wibox.widget({
 })
 power_status:buttons(
 	awful.button({ }, 1, function()
-		local iface = "org.bluez.Adapter1"
-		bluetooth:GetAsync(
-			function (_, _, powered)
-				bluetooth:SetAsync(
+		bl_props:GetAsync(
+			function (_, powered)
+				bl_props:SetAsync(
 					function() end, nil,
-					iface, "Powered", GLib.Variant.new_boolean(not powered))
+					IFACE.adapter, "Powered", GLib.Variant.new_boolean(not powered))
 			end, nil,
-			iface, "Powered")
+			IFACE.adapter, "Powered")
 	end)
 )
 
@@ -78,35 +85,27 @@ local discoverable_status = wibox.widget({
 })
 discoverable_status:buttons(
 	awful.button({ }, 1, function()
-		local iface = "org.bluez.Adapter1"
-		bluetooth:GetAsync(
-			function (proxy, _, discoverable)
-				proxy:SetAsync(
+		bl_props:GetAsync(
+			function (_, discoverable)
+				bl_props:SetAsync(
 					function() end, nil,
-					iface, "Discoverable", GLib.Variant.new_boolean(not discoverable)
+					IFACE.adapter, "Discoverable", GLib.Variant.new_boolean(not discoverable)
 				)
 			end, nil,
-			iface, "Discoverable"
+			IFACE.adapter, "Discoverable"
 		)
 	end)
 )
 
-bluetooth:GetAsync(
-	function(_, _, powered)
-		power_status.power = powered
-		if powered then
-			discoverable_status.fg = nil
-		else
-			discoverable_status.fg = beautiful.colors.muted
-		end
-	end, nil, "org.bluez.Adapter1", "Powered"
-)
-bluetooth:GetAsync(
-	function(_, _, discoverable)
-		local text = discoverable and "yes" or "no"
-		discoverable_status.text = text
-	end, nil, "org.bluez.Adapter1", "Discoverable"
-)
+local powered = bl_adapter.Powered
+power_status.power = powered
+if powered then
+	discoverable_status.fg = nil
+else
+	discoverable_status.fg = beautiful.colors.muted
+end
+local discoverable = bl_adapter.Discoverable
+discoverable_status.text = discoverable and "yes" or "no"
 
 local blue_popup = awful.popup({
 	widget = {
@@ -130,8 +129,8 @@ local blue_popup = awful.popup({
 				{
 					widget = wibox.widget.textbox,
 					text = string.format("%s (%s)",
-						bluetooth:Get("org.bluez.Adapter1", "Name"),
-						bluetooth:Get("org.bluez.Adapter1", "Address"))
+						bl_adapter.Name,
+						bl_adapter.Address)
 				},
 				discoverable_status,
 			}
@@ -169,7 +168,7 @@ Capi.awesome.connect_signal("popup_show", function(uid)
 	})
 end)
 
-bluetooth:connect_signal(function(_, _, changed)
+bl_adapter.on.PropertiesChanged(function(changed)
 	if changed.Powered ~= nil then
 		local text = changed.Powered and "on" or "off"
 		naughty.notify({
@@ -195,6 +194,6 @@ bluetooth:connect_signal(function(_, _, changed)
 		})
 		discoverable_status.text = text
 	end
-end, "PropertiesChanged")
+end)
 
 return bar_widget
