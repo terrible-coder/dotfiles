@@ -141,11 +141,11 @@ for _, path in ipairs(ports) do
 	})
 	item:buttons(
 		awful.button({ }, 1, function()
-			-- if p.Available == 1 then
-			-- 	return
-			-- end
+			if p.Available == 1 then
+				return
+			end
 			if sink_props:Get(IFACE.device, "ActivePort") ~= path then
-				sink_props:Set(IFACE.device, "ActivePort", path)
+				sink_props:Set(IFACE.device, "ActivePort", GLib.Variant.new("o", path))
 			end
 		end)
 	)
