@@ -42,7 +42,7 @@ local connection = Gio.DBusConnection.new_for_address_sync(
 local PA_PATH = "/org/pulseaudio/core1"
 objects.pulse = {
 	object = dbus.ObjectProxy.new(connection, PA_PATH, nil),
-	base = "org.PulseAduio.Core1",
+	base = "org.PulseAudio.Core1",
 }
 
 -- prepare bluez bluetooth object
