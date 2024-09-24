@@ -3,9 +3,22 @@ local beautiful = require("beautiful")
 local dpi = beautiful.xresources.apply_dpi
 local wibox = require("wibox")
 local gshape = require("gears.shape")
+local naughty = require("naughty")
 
-local wireless = require("sys.network.wireless")
+local dbus = require("modules.dbus-lua")
 local net_enums = require("sys.network.enums")
+local wifi = require("sys").wifi
+
+local wl_obj = wifi.object
+local IFACE = {
+	properties = "org.freedesktop.DBus.Properties",
+	device = wifi.base..".Device",
+	wireless = wifi.base..".Device.Wireless",
+	access_point = wifi.base..".AccessPoint",
+}
+local wl_props = wl_obj:implement(IFACE.properties)
+local wl_device = wl_obj:implement(IFACE.device)
+local wl_wireless = wl_obj:implement(IFACE.wireless)
 
 local icons = {
 	unknown = "󰤫",
@@ -22,7 +35,7 @@ local icons = {
 
 local wgt_icon = wibox.widget.textbox(icons.unavailable)
 wgt_icon.font = beautiful.fonts.nerd..16
-local wgt_label = wibox.widget.textbox("WiFi off")
+local wgt_label = wibox.widget.textbox("WiFi")
 
 local bar_widget = wibox.widget({
 	layout = wibox.layout.fixed.horizontal,
@@ -54,37 +67,32 @@ local bar_widget = wibox.widget({
 	}
 })
 
-wireless.socket:connect_signal("StateChanged", function(_, state)
-	if state.new == net_enums.DeviceState.UNKNOWN then
-		wgt_icon.text = icons.unknown
-		wgt_label.text = "??"
-	elseif state.new == net_enums.DeviceState.UNAVAILABLE then
-		wgt_icon.text = icons.unavailable
-		wgt_label.text = "WiFi off"
-	elseif state.new == net_enums.DeviceState.DISCONNECTED then
-		wgt_icon.text = icons.disconnected
-		wgt_label.text = "Disconnected"
-	elseif state.new >= net_enums.DeviceState.PREPARE and
-		     state.new <= net_enums.DeviceState.SECONDARIES then
-		wgt_icon.text = icons.connecting
-		wgt_label.text = "Connecting..."
-	elseif state.new == net_enums.DeviceState.ACTIVATED then
-		local ap_inuse = wireless.AccessPoint(wireless.Device.ActiveAccessPoint)
-		wgt_icon.text = icons.activated[1]
-		wgt_label.text = string.char(table.unpack(ap_inuse.Ssid))
-	else
-		wgt_label.text = "new: "..state.new..", old: "..state.old..", reason: "..state.reason
-	end
-end)
-
 local _last_level = 0
-
-wireless.socket:connect_signal(
-	"AccessPoint::PropertiesChanged",
-	function(_, path, changed)
-		if path ~= wireless.Device.ActiveAccessPoint then
-			return
+local active_ap = nil
+local function prepare_ap(path)
+	if path == "/" then
+		if active_ap then
+			naughty.notify({
+				title = "WiFi",
+				text = ("Disconnecting from '%s'"):format(
+					string.char(table.unpack(active_ap.Ssid))
+				)
+			})
+			active_ap.on.destroy()
 		end
+		active_ap = nil
+		return
+	end
+	active_ap = dbus.Proxy.new(dbus.ObjectProxy.new(
+		dbus.Bus.SYSTEM, path, wl_obj.name), IFACE.access_point
+	)
+	naughty.notify({
+		title = "WiFi",
+		text = ("Connected to '%s'"):format(
+			string.char(table.unpack(active_ap.Ssid))
+		)
+	})
+	active_ap.on.PropertiesChanged(function(changed)
 		if changed.Strength then
 			local level = 0
 			if changed.Strength > 75 then level = 4
@@ -97,10 +105,49 @@ wireless.socket:connect_signal(
 				wgt_icon.text = icons.activated[level]
 			end
 		end
+	end)
+end
+
+wl_device.on.StateChanged(function(new, old, reason)
+	wgt_label.text = "WiFi"
+	if new == net_enums.DeviceState.UNKNOWN then
+		wgt_icon.text = icons.unknown
+	elseif new == net_enums.DeviceState.UNAVAILABLE then
+		wgt_icon.text = icons.unavailable
+	elseif new == net_enums.DeviceState.DISCONNECTED then
+		wgt_icon.text = icons.disconnected
+	elseif new >= net_enums.DeviceState.PREPARE and
+		     new <= net_enums.DeviceState.SECONDARIES then
+		wgt_icon.text = icons.connecting
+	elseif new == net_enums.DeviceState.ACTIVATED then
+		wgt_icon.text = icons.activated[1]
+	else
+		wgt_label.text = "state: "..new
 	end
-)
-wireless.socket:emit_signal("StateChanged", {
-	new = wireless.Device.State, old = 0, reason = 0
-})
+end)
+
+wl_wireless.on.PropertiesChanged(function(changed)
+	if changed.ActiveAccessPoint ~= nil then
+		prepare_ap(changed.ActiveAccessPoint)
+	end
+end)
+
+local state = wl_device.State
+wgt_label.text = "WiFi"
+if state == net_enums.DeviceState.UNKNOWN then
+	wgt_icon.text = icons.unknown
+elseif state == net_enums.DeviceState.UNAVAILABLE then
+	wgt_icon.text = icons.unavailable
+elseif state == net_enums.DeviceState.DISCONNECTED then
+	wgt_icon.text = icons.disconnected
+elseif state >= net_enums.DeviceState.PREPARE and
+	state <= net_enums.DeviceState.SECONDARIES then
+	wgt_icon.text = icons.connecting
+elseif state == net_enums.DeviceState.ACTIVATED then
+	wgt_icon.text = icons.activated[1]
+else
+	wgt_label.text = "state: "..state
+end
+prepare_ap(wl_wireless.ActiveAccessPoint)
 
 return bar_widget
