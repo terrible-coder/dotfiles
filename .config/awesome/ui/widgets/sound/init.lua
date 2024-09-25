@@ -15,13 +15,13 @@ sound:ListenForSignal(pulse.base..".Device.VolumeUpdated", {
 sound:ListenForSignal(pulse.base..".Device.MuteUpdated", {
 	sink.object_path, source.object_path,
 })
--- sound:ListenForSignal("org.PulseAudio.Core1.Device.ActivePortUpdated", {
--- 	sink.object_path, source.object_path,
--- })
+sound:ListenForSignal(pulse.base..".Device.ActivePortUpdated", {
+	sink.object_path, source.object_path,
+})
 sound:ListenForSignal(pulse.base..".Device.StateUpdated", {
 	source.object_path,
 })
--- sound.ListenForSignal("org.PulseAudio.Core1.DevicePort.AvailableChanged", { })
+sound:ListenForSignal(pulse.base..".DevicePort.AvailableChanged", { })
 
 return {
 	sink = sink_widget,

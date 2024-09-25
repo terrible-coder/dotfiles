@@ -117,12 +117,11 @@ end)
 
 slider.value = volume_percent(sink_device.Volume[1], sink_device.BaseVolume)
 
--- Record for when ActivePortUpdated. This is assuming that the order won't
--- change.
-local ports = sink_device.Ports
+local _active_port = sink_device.ActivePort
+local _active_port_idx = 0
 
 local ports_layout = wibox.layout.flex.vertical()
-for _, path in ipairs(ports) do
+for i, path in ipairs(sink_device.Ports) do
 	local p = dbus.Proxy.new(
 		dbus.ObjectProxy.new(core_obj.connection, path, nil),
 		IFACE.device_port
@@ -139,6 +138,11 @@ for _, path in ipairs(ports) do
 			}
 		}
 	})
+	if path == _active_port then
+		_active_port_idx = i
+		item.bg = beautiful.colors.iris
+		item.fg = beautiful.colors.hl_low
+	end
 	item:buttons(
 		awful.button({ }, 1, function()
 			if p.Available == 1 then
@@ -149,26 +153,15 @@ for _, path in ipairs(ports) do
 			end
 		end)
 	)
+	p.on.AvailableChanged(function(available)
+		if available == 1 then
+			item.fg = beautiful.colors.muted
+		else
+			item.fg = nil
+		end
+	end)
 	ports_layout:add(item)
 end
-
--- local function update_ports()
--- 	for i, p in ipairs(ports) do
--- 		local bg, fg = nil, nil
--- 		if p.Available == 1 then
--- 			bg = nil
--- 			fg = beautiful.colors.muted
--- 		else
--- 			if p.object_path == sink.ActivePort then
--- 				bg = beautiful.colors.iris
--- 				fg = beautiful.colors.hl_low
--- 			end
--- 		end
--- 		ports_layout.children[i].bg = bg
--- 		ports_layout.children[i].fg = fg
--- 	end
--- end
--- update_ports()
 
 local sink_popup = awful.popup({
 	widget = {
@@ -253,8 +246,19 @@ sink_device.on.MuteUpdated(function(mute)
 	local volume = sink_props:Get(IFACE.device, "Volume")
 	sink_label.text = volume_text(mute, volume[1], sink_device.BaseVolume)
 end)
-sink_device.on.ActivePortUpdated(function()
-	-- update_ports()
+sink_device.on.ActivePortUpdated(function(active_port_path)
+	if active_port_path == _active_port then return end
+	ports_layout.children[_active_port_idx].bg = nil
+	ports_layout.children[_active_port_idx].fg = nil
+	_active_port = active_port_path
+	for i, path in ipairs(sink_device.Ports) do
+		if path == active_port_path then
+			_active_port_idx = i
+			break
+		end
+	end
+	ports_layout.children[_active_port_idx].bg = beautiful.colors.iris
+	ports_layout.children[_active_port_idx].fg = beautiful.colors.hl_low
 end)
 
 return {
