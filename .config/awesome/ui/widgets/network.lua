@@ -1,4 +1,4 @@
-local awful = require("awful")
+-- local awful = require("awful")
 local beautiful = require("beautiful")
 local dpi = beautiful.xresources.apply_dpi
 local wibox = require("wibox")
@@ -6,8 +6,8 @@ local gshape = require("gears.shape")
 local naughty = require("naughty")
 
 local dbus = require("modules.dbus-lua")
-local net_enums = require("sys.network.enums")
 local wifi = require("sys").wifi
+local net_enums = wifi.enums
 
 local wl_obj = wifi.object
 local IFACE = {
@@ -16,7 +16,7 @@ local IFACE = {
 	wireless = wifi.base..".Device.Wireless",
 	access_point = wifi.base..".AccessPoint",
 }
-local wl_props = wl_obj:implement(IFACE.properties)
+-- local wl_props = wl_obj:implement(IFACE.properties)
 local wl_device = wl_obj:implement(IFACE.device)
 local wl_wireless = wl_obj:implement(IFACE.wireless)
 
@@ -108,7 +108,7 @@ local function prepare_ap(path)
 	end)
 end
 
-wl_device.on.StateChanged(function(new, old, reason)
+wl_device.on.StateChanged(function(new, _, _)
 	wgt_label.text = "WiFi"
 	if new == net_enums.DeviceState.UNKNOWN then
 		wgt_icon.text = icons.unknown

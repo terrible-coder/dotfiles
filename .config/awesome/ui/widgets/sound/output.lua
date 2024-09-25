@@ -11,6 +11,7 @@ local naughty = require("naughty")
 local GLib = require("lgi").GLib
 local dbus = require("modules.dbus-lua")
 local pulse = require("sys").pulse
+local snd_enums = pulse.enums
 
 local core_obj = pulse.object
 local IFACE = {
@@ -145,7 +146,7 @@ for i, path in ipairs(sink_device.Ports) do
 	end
 	item:buttons(
 		awful.button({ }, 1, function()
-			if p.Available == 1 then
+			if p.Available == snd_enums.NO then
 				return
 			end
 			if sink_props:Get(IFACE.device, "ActivePort") ~= path then

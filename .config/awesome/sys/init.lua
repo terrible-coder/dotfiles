@@ -20,6 +20,23 @@ objects.wifi = {
 		NM_NAME
 	),
 	base = NM_IFACE,
+	enums = {
+		DeviceState = {
+			UNKNOWN      =   0,
+			UNMANAGED    =  10,
+			UNAVAILABLE  =  20,
+			DISCONNECTED =  30,
+			PREPARE      =  40,
+			CONFIG       =  50,
+			NEED_AUTH    =  60,
+			IP_CONFIG    =  70,
+			IP_CHECK     =  80,
+			SECONDARIES  =  90,
+			ACTIVATED    = 100,
+			DEACTIVATING = 110,
+			FAILED       = 120,
+		}
+	}
 }
 
 -- preparing PulseAudio object
@@ -43,6 +60,13 @@ local PA_PATH = "/org/pulseaudio/core1"
 objects.pulse = {
 	object = dbus.ObjectProxy.new(connection, PA_PATH, nil),
 	base = "org.PulseAudio.Core1",
+	enums = {
+		Available = {
+			UNKNOWN = 0,
+			NO = 1,
+			YES = 2,
+		},
+	}
 }
 
 -- prepare bluez bluetooth object

@@ -11,6 +11,7 @@ local naughty = require("naughty")
 local GLib = require("lgi").GLib
 local dbus = require("modules.dbus-lua")
 local pulse = require("sys").pulse
+local snd_enums = pulse.enums
 
 local core_obj = pulse.object
 local IFACE = {
@@ -20,7 +21,6 @@ local IFACE = {
 }
 
 local core_core = core_obj:implement(pulse.base)
--- local sound = require("sys.sound")
 
 -- This function, in this file, is wrong. Precisely because it is wrong that we
 -- get the correct answer at the end. The PulseAudio source Device does not show
@@ -149,7 +149,7 @@ for i, path in ipairs(source_device.Ports) do
 	end
 	item:buttons(
 		awful.button({ }, 1, function()
-			if p.Available == 1 then
+			if p.Available == snd_enums.NO then
 				return
 			end
 			if source_props:Get(IFACE.device, "ActivePort") ~= path then
