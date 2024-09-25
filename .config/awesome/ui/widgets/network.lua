@@ -1,4 +1,7 @@
--- local awful = require("awful")
+local Capi = {
+	awesome = awesome
+}
+local awful = require("awful")
 local beautiful = require("beautiful")
 local dpi = beautiful.xresources.apply_dpi
 local wibox = require("wibox")
@@ -88,6 +91,103 @@ local function prepare_ap(path)
 		end
 	end)
 end
+
+local radio_status = wibox.widget({
+	widget = wibox.container.background,
+	bg = beautiful.colors.iris, fg = beautiful.colors.hl_low,
+	shape = function(cr, w, h) gshape.rounded_rect(cr, w, h, 2) end,
+	{
+		widget = wibox.container.margin,
+		left = dpi(5), right = dpi(5), top = dpi(2), bottom = dpi(2),
+		{
+			widget = wibox.widget.textbox,
+			font = beautiful.fonts.nerd..12,
+			text = "󰐥",
+		}
+	},
+	set_radio = function(self, radio)
+		self.bg = radio and beautiful.colors.love or beautiful.colors.pine
+	end
+})
+
+local conn_label = wibox.widget.textbox("Connection name")
+local conn_recieve = wibox.widget.textbox("0 MB/s")
+local conn_transfer = wibox.widget.textbox("0 MB/s")
+
+local wifi_popup = awful.popup({
+	widget = {
+		widget = wibox.container.background,
+		bg = beautiful.colors.overlay,
+		{
+			widget = wibox.container.margin,
+			margins = dpi(10),
+			{
+				layout = wibox.layout.fixed.vertical,
+				spacing = dpi(5),
+				{
+					layout = wibox.layout.align.horizontal,
+					{
+						widget = wibox.widget.textbox,
+						markup = "<b>WiFi</b>",
+					},
+					nil,
+					radio_status
+				},
+				conn_label,
+				{
+					layout = wibox.layout.fixed.horizontal,
+					spacing = dpi(5),
+					{
+						widget = wibox.widget.textbox,
+						text = "󰬬",
+						font = beautiful.fonts.nerd..12
+					},
+					conn_transfer,
+				},
+				{
+					layout = wibox.layout.fixed.horizontal,
+					spacing = dpi(5),
+					{
+						widget = wibox.widget.textbox,
+						text = "󰬦",
+						font = beautiful.fonts.nerd..12
+					},
+					conn_recieve,
+				}
+			}
+		}
+	},
+	shape = function(cr, w, h) gshape.rounded_rect(cr, w, h, 5) end,
+	border_width = dpi(2),
+	border_color = beautiful.colors.iris,
+	placement = { },
+	ontop = true,
+	visible = false,
+})
+
+wifi_popup.uid = 230
+
+bar_widget:buttons(
+	awful.button({ }, 1, function()
+		Capi.awesome.emit_signal("popup_show", wifi_popup.uid)
+	end)
+)
+
+Capi.awesome.connect_signal("popup_show", function(uid)
+	if uid == wifi_popup.uid then
+		wifi_popup.visible = not wifi_popup.visible
+	else
+		wifi_popup.visible = false
+		return
+	end
+	if not wifi_popup.visible then return end
+	awful.placement.next_to(wifi_popup, {
+		preferred_positions = { "bottom" },
+		preferred_anchors = { "middle" },
+		mode = "cursor_inside",
+		offset = { y = 5 },
+	})
+end)
 
 wl_device.on.StateChanged(function(new, _, _)
 	if new == net_enums.DeviceState.UNKNOWN then
