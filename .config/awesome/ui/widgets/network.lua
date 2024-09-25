@@ -40,6 +40,15 @@ local icons = {
 	}
 }
 
+local partial = {
+	left = function(cr, w, h)
+		gshape.partially_rounded_rect(cr, w, h, true, false, false, true, dpi(2))
+	end,
+	right = function(cr, w, h)
+		gshape.partially_rounded_rect(cr, w, h, false, true, true, false, dpi(2))
+	end
+}
+
 local wgt_icon = wibox.widget.textbox(icons.unavailable)
 wgt_icon.font = beautiful.fonts.nerd..16
 
@@ -114,9 +123,68 @@ local radio_status = wibox.widget({
 	end
 })
 
-local conn_label = wibox.widget.textbox("Connection name")
+local conn_label = wibox.widget({
+	widget = wibox.container.background,
+	bg = beautiful.colors.iris, fg = beautiful.colors.hl_low,
+	shape = partial.left,
+	{
+		widget = wibox.container.margin,
+		left = dpi(5), right = dpi(5), top = dpi(2), bottom = dpi(2),
+		{
+			widget = wibox.widget.textbox,
+			text = "Connection name"
+		}
+	}
+})
+local conn_expand = wibox.widget({
+	widget = wibox.container.background,
+	bg = beautiful.colors.iris, fg = beautiful.colors.hl_low,
+	shape = partial.right,
+	{
+		widget = wibox.container.margin,
+		margins = dpi(2),
+		{
+			widget = wibox.widget.textbox,
+			font = beautiful.fonts.nerd..12,
+			text = ""
+		}
+	}
+})
 local conn_recieve = wibox.widget.textbox("0 MB/s")
 local conn_transfer = wibox.widget.textbox("0 MB/s")
+
+local conn_list = wibox.layout.fixed.vertical()
+conn_list:add(wibox.widget.textbox("hello1"))
+conn_list:add(wibox.widget.textbox("hello2"))
+conn_list:add(wibox.widget.textbox("hello3"))
+
+local known_conn = awful.popup({
+	widget = {
+		widget = wibox.container.background,
+		{
+			widget = wibox.container.margin,
+			margins = dpi(5),
+			conn_list
+		},
+	},
+	shape = function(cr, w, h) gshape.rounded_rect(cr, w, h, 5) end,
+	border_width = dpi(2),
+	border_color = beautiful.colors.iris,
+	placement = { },
+	ontop = true,
+	visible = false,
+})
+
+conn_expand:buttons(
+	awful.button({ }, 1, function()
+		known_conn.visible = not known_conn.visible
+		if not known_conn.visible then return end
+		awful.placement.next_to(known_conn, {
+			preferred_positions = { "right" },
+			preferred_anchors = { "front" },
+		})
+	end)
+)
 
 local wifi_popup = awful.popup({
 	widget = {
@@ -137,7 +205,12 @@ local wifi_popup = awful.popup({
 					nil,
 					radio_status
 				},
-				conn_label,
+				{
+					layout = wibox.layout.fixed.horizontal,
+					spacing = dpi(2),
+					conn_label,
+					conn_expand,
+				},
 				{
 					layout = wibox.layout.fixed.horizontal,
 					spacing = dpi(5),
