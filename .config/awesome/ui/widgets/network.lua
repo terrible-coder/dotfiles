@@ -150,13 +150,16 @@ local conn_expand = wibox.widget({
 		}
 	}
 })
-local conn_recieve = wibox.widget.textbox("0 MB/s")
-local conn_transfer = wibox.widget.textbox("0 MB/s")
+local conn_recieve = wibox.widget.textbox("0 B/s")
+local conn_transfer = wibox.widget.textbox("0 B/s")
 
 local conn_list = wibox.layout.fixed.vertical()
-conn_list:add(wibox.widget.textbox("hello1"))
-conn_list:add(wibox.widget.textbox("hello2"))
-conn_list:add(wibox.widget.textbox("hello3"))
+local available = wl_props:Get(IFACE.device, "AvailableConnections")
+for _, setting in ipairs(available) do
+	local conn_obj = dbus.ObjectProxy.new(wl_obj.connection, setting, wl_obj.name)
+	local conn_sett = conn_obj:implement(wifi.base..".Settings.Connection")
+	conn_list:add(wibox.widget.textbox(conn_sett:GetSettings().connection.id))
+end
 
 local known_conn = awful.popup({
 	widget = {
@@ -255,9 +258,13 @@ Capi.awesome.connect_signal("popup_show", function(uid)
 		wifi_popup.visible = not wifi_popup.visible
 	else
 		wifi_popup.visible = false
+		known_conn.visible = false
 		return
 	end
-	if not wifi_popup.visible then return end
+	if not wifi_popup.visible then
+		known_conn.visible = false
+		return
+	end
 	awful.placement.next_to(wifi_popup, {
 		preferred_positions = { "bottom" },
 		preferred_anchors = { "middle" },
