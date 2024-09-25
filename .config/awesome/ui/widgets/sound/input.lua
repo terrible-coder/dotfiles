@@ -9,7 +9,18 @@ local wibox = require("wibox")
 local naughty = require("naughty")
 
 local GLib = require("lgi").GLib
-local sound = require("sys.sound")
+local dbus = require("modules.dbus-lua")
+local pulse = require("sys").pulse
+local snd_enums = pulse.enums
+
+local core_obj = pulse.object
+local IFACE = {
+	properties = "org.freedesktop.DBus.Properties",
+	device = pulse.base..".Device",
+	device_port = pulse.base..".DevicePort",
+}
+
+local core_core = core_obj:implement(pulse.base)
 
 -- This function, in this file, is wrong. Precisely because it is wrong that we
 -- get the correct answer at the end. The PulseAudio source Device does not show
@@ -29,12 +40,16 @@ local function volume_text(mute, volume, base_volume)
 	end
 end
 
-local source_path = sound.GetSourceByName("@DEFAULT_SOURCE@")
-local source = sound.Device(source_path)
+local source_path = core_core:GetSourceByName("@DEFAULT_SOURCE@")
+local source_obj = dbus.ObjectProxy.new(core_obj.connection, source_path, nil)
+local source_props = source_obj:implement(IFACE.properties)
+local source_device = source_obj:implement(IFACE.device)
 
 local source_label = wibox.widget.textbox()
-source_label.text = volume_text(source.Mute, source.Volume[1], source.BaseVolume)
-local source_icon = wibox.widget.textbox(source.State == 0 and "󰍬" or "󰍮")
+source_label.text = volume_text(
+	source_device.Mute, source_device.Volume[1], source_device.BaseVolume
+)
+local source_icon = wibox.widget.textbox(source_device.State == 0 and "󰍬" or "󰍮")
 source_icon.font = beautiful.fonts.nerd..12
 
 local source_widget = wibox.widget({
@@ -97,21 +112,24 @@ slider:connect_signal("button::release", function()
 	slider_drag = false
 	-- This calculation is wrong for the same reason the volume_percent function
 	-- is wrong. Check function comment.
-	local new_volume = math.floor(source.BaseVolume * slider.value / 10)
-	source.Volume = GLib.Variant.new("au", { new_volume, new_volume })
+	local new_volume = math.floor(source_device.BaseVolume * slider.value / 10)
+	source_props:Set(
+		IFACE.device, "Volume",
+		GLib.Variant.new("au", { new_volume, new_volume })
+	)
 end)
 
-slider.value = volume_percent(source.Volume[1], source.BaseVolume)
+slider.value = volume_percent(source_device.Volume[1], source_device.BaseVolume)
 
--- Record for when ActivePortUpdated. This is assuming that the order won't
--- change.
-local ports = { }
-for i, path in ipairs(source.Ports) do
-	ports[i] = sound.DevicePort(path)
-end
+local _active_port = source_device.ActivePort
+local _active_port_idx = 0
 
 local ports_layout = wibox.layout.flex.vertical()
-for _, p in ipairs(ports) do
+for i, path in ipairs(source_device.Ports) do
+	local p = dbus.Proxy.new(
+		dbus.ObjectProxy.new(core_obj.connection, path, nil),
+		IFACE.device_port
+	)
 	local item = wibox.widget({
 		widget = wibox.container.background,
 		shape = function(cr, w, h) gshape.rounded_rect(cr, w, h, 2) end,
@@ -124,40 +142,30 @@ for _, p in ipairs(ports) do
 			}
 		}
 	})
+	if path == _active_port then
+		_active_port_idx = i
+		item.bg = beautiful.colors.iris
+		item.fg = beautiful.colors.hl_low
+	end
 	item:buttons(
 		awful.button({ }, 1, function()
-			if p.Available == 1 then
+			if p.Available == snd_enums.NO then
 				return
 			end
-			if source.ActivePort ~= p.object_path then
-				source.ActivePort = GLib.Variant.new("o", p.object_path)
+			if source_props:Get(IFACE.device, "ActivePort") ~= path then
+				source_props:Set(IFACE.device, "ActivePort", GLib.Variant.new("o", path))
 			end
 		end)
 	)
+	p.on.AvailableChanged(function(available)
+		if available == 1 then
+			item.fg = beautiful.colors.muted
+		else
+			item.fg = nil
+		end
+	end)
 	ports_layout:add(item)
 end
-
-local function update_port(index, port)
-	local bg, fg = nil, nil
-	if port.Available == 1 then
-		bg = nil
-		fg = beautiful.colors.muted
-	else
-		if port.object_path == source.ActivePort then
-			bg = beautiful.colors.iris
-			fg = beautiful.colors.hl_low
-		end
-	end
-	ports_layout.children[index].bg = bg
-	ports_layout.children[index].fg = fg
-end
-
-local function update_all_ports()
-	for i, p in ipairs(ports) do
-		update_port(i, p)
-	end
-end
-update_all_ports()
 
 local source_popup = awful.popup({
 	widget = {
@@ -186,7 +194,7 @@ local source_popup = awful.popup({
 				},
 				{
 					widget = wibox.widget.textbox,
-					text = source.PropertyList["device.description"]
+					text = source_device.PropertyList["device.description"]
 				},
 				{
 					layout = wibox.layout.fixed.horizontal,
@@ -233,22 +241,30 @@ Capi.awesome.connect_signal("popup_show", function(uid)
 	})
 end)
 
-source.connect_signal(function(_, _)
-	source_label.text = volume_text(source.Mute, source.Volume[1], source.BaseVolume)
-	slider.value = volume_percent(source.Volume[1], source.BaseVolume)
-end, "VolumeUpdated")
-source.connect_signal(function(_, _)
-	source_label.text = volume_text(source.Mute, source.Volume[1], source.BaseVolume)
-end, "MuteUpdated")
-source.connect_signal(function()
-	update_all_ports()
-end, "ActivePortUpdated")
-for i, p in ipairs(ports) do
-	p.connect_signal(function()
-		update_port(i, p)
-	end, "AvailableChanged")
-end
-source.connect_signal(function(_, state)
+source_device.on.VolumeUpdated(function(volume)
+	local mute = source_props:Get(IFACE.device, "Mute")
+	source_label.text = volume_text(mute, volume[1], source_device.BaseVolume)
+	slider.value = volume_percent(volume[1], source_device.BaseVolume)
+end)
+source_device.on.MuteUpdated(function(mute)
+	local volume = source_props:Get(IFACE.device, "Volume")
+	source_label.text = volume_text(mute, volume[1], source_device.BaseVolume)
+end)
+source_device.on.ActivePortUpdated(function(active_port_path)
+	if active_port_path == _active_port then return end
+	ports_layout.children[_active_port_idx].bg = nil
+	ports_layout.children[_active_port_idx].fg = nil
+	_active_port = active_port_path
+	for i, path in ipairs(source_device.Ports) do
+		if path == active_port_path then
+			_active_port_idx = i
+			break
+		end
+	end
+	ports_layout.children[_active_port_idx].bg = beautiful.colors.iris
+	ports_layout.children[_active_port_idx].fg = beautiful.colors.hl_low
+end)
+source_device.on.StateUpdated(function(state)
 	if state == 0 then
 		source_icon.text = "󰍬"
 		naughty.notify({
@@ -262,9 +278,9 @@ source.connect_signal(function(_, state)
 			text = "Suspended"
 		})
 	end
-end, "StateUpdated")
+end)
 
 return {
 	widget = source_widget,
-	object = source
+	object = source_obj
 }

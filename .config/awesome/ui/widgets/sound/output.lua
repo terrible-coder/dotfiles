@@ -9,7 +9,18 @@ local wibox = require("wibox")
 local naughty = require("naughty")
 
 local GLib = require("lgi").GLib
-local sound = require("sys.sound")
+local dbus = require("modules.dbus-lua")
+local pulse = require("sys").pulse
+local snd_enums = pulse.enums
+
+local core_obj = pulse.object
+local IFACE = {
+	properties = "org.freedesktop.DBus.Properties",
+	device = pulse.base..".Device",
+	device_port = pulse.base..".DevicePort",
+}
+
+local core_core = core_obj:implement(pulse.base)
 
 local function volume_percent(volume, base_volume)
 	return math.ceil(100 * volume / base_volume)
@@ -23,11 +34,15 @@ local function volume_text(mute, volume, base_volume)
 	end
 end
 
-local sink_path = sound.GetSinkByName("@DEFAULT_SINK@")
-local sink = sound.Device(sink_path)
+local sink_path = core_core:GetSinkByName("@DEFAULT_SINK@")
+local sink_obj = dbus.ObjectProxy.new(core_obj.connection, sink_path, nil)
+local sink_props = sink_obj:implement(IFACE.properties)
+local sink_device = sink_obj:implement(IFACE.device)
 
 local sink_label = wibox.widget.textbox()
-sink_label.text = volume_text(sink.Mute, sink.Volume[1], sink.BaseVolume)
+sink_label.text = volume_text(
+	sink_device.Mute, sink_device.Volume[1], sink_device.BaseVolume
+)
 local sink_icon = wibox.widget.textbox("")
 sink_icon.font = beautiful.fonts.nerd..16
 
@@ -94,21 +109,24 @@ end)
 slider:connect_signal("button::release", function()
 	if not slider_drag then return end
 	slider_drag = false
-	local new_volume = math.floor(sink.BaseVolume * slider.value / 100)
-	sink.Volume = GLib.Variant.new("au", { new_volume, new_volume })
+	local new_volume = math.floor(sink_device.BaseVolume * slider.value / 100)
+	sink_props:Set(
+		IFACE.device, "Volume",
+		GLib.Variant.new("au", { new_volume, new_volume })
+	)
 end)
 
-slider.value = volume_percent(sink.Volume[1], sink.BaseVolume)
+slider.value = volume_percent(sink_device.Volume[1], sink_device.BaseVolume)
 
--- Record for when ActivePortUpdated. This is assuming that the order won't
--- change.
-local ports = { }
-for i, path in ipairs(sink.Ports) do
-	ports[i] = sound.DevicePort(path)
-end
+local _active_port = sink_device.ActivePort
+local _active_port_idx = 0
 
 local ports_layout = wibox.layout.flex.vertical()
-for _, p in ipairs(ports) do
+for i, path in ipairs(sink_device.Ports) do
+	local p = dbus.Proxy.new(
+		dbus.ObjectProxy.new(core_obj.connection, path, nil),
+		IFACE.device_port
+	)
 	local item = wibox.widget({
 		widget = wibox.container.background,
 		shape = function(cr, w, h) gshape.rounded_rect(cr, w, h, 2) end,
@@ -121,36 +139,30 @@ for _, p in ipairs(ports) do
 			}
 		}
 	})
+	if path == _active_port then
+		_active_port_idx = i
+		item.bg = beautiful.colors.iris
+		item.fg = beautiful.colors.hl_low
+	end
 	item:buttons(
 		awful.button({ }, 1, function()
-			if p.Available == 1 then
+			if p.Available == snd_enums.NO then
 				return
 			end
-			if sink.ActivePort ~= p.object_path then
-				sink.ActivePort = GLib.Variant.new("o", p.object_path)
+			if sink_props:Get(IFACE.device, "ActivePort") ~= path then
+				sink_props:Set(IFACE.device, "ActivePort", GLib.Variant.new("o", path))
 			end
 		end)
 	)
+	p.on.AvailableChanged(function(available)
+		if available == 1 then
+			item.fg = beautiful.colors.muted
+		else
+			item.fg = nil
+		end
+	end)
 	ports_layout:add(item)
 end
-
-local function update_ports()
-	for i, p in ipairs(ports) do
-		local bg, fg = nil, nil
-		if p.Available == 1 then
-			bg = nil
-			fg = beautiful.colors.muted
-		else
-			if p.object_path == sink.ActivePort then
-				bg = beautiful.colors.iris
-				fg = beautiful.colors.hl_low
-			end
-		end
-		ports_layout.children[i].bg = bg
-		ports_layout.children[i].fg = fg
-	end
-end
-update_ports()
 
 local sink_popup = awful.popup({
 	widget = {
@@ -179,7 +191,7 @@ local sink_popup = awful.popup({
 				},
 				{
 					widget = wibox.widget.textbox,
-					text = sink.PropertyList["device.description"]
+					text = sink_device.PropertyList["device.description"]
 				},
 				{
 					layout = wibox.layout.fixed.horizontal,
@@ -226,18 +238,31 @@ Capi.awesome.connect_signal("popup_show", function(uid)
 	})
 end)
 
-sink.connect_signal(function(_, _)
-	sink_label.text = volume_text(sink.Mute, sink.Volume[1], sink.BaseVolume)
-	slider.value = volume_percent(sink.Volume[1], sink.BaseVolume)
-end, "VolumeUpdated")
-sink.connect_signal(function(_, _)
-	sink_label.text = volume_text(sink.Mute, sink.Volume[1], sink.BaseVolume)
-end, "MuteUpdated")
-sink.connect_signal(function()
-	update_ports()
-end, "ActivePortUpdated")
+sink_device.on.VolumeUpdated(function(volume)
+	local mute = sink_props:Get(IFACE.device, "Mute")
+	sink_label.text = volume_text(mute, volume[1], sink_device.BaseVolume)
+	slider.value = volume_percent(volume[1], sink_device.BaseVolume)
+end)
+sink_device.on.MuteUpdated(function(mute)
+	local volume = sink_props:Get(IFACE.device, "Volume")
+	sink_label.text = volume_text(mute, volume[1], sink_device.BaseVolume)
+end)
+sink_device.on.ActivePortUpdated(function(active_port_path)
+	if active_port_path == _active_port then return end
+	ports_layout.children[_active_port_idx].bg = nil
+	ports_layout.children[_active_port_idx].fg = nil
+	_active_port = active_port_path
+	for i, path in ipairs(sink_device.Ports) do
+		if path == active_port_path then
+			_active_port_idx = i
+			break
+		end
+	end
+	ports_layout.children[_active_port_idx].bg = beautiful.colors.iris
+	ports_layout.children[_active_port_idx].fg = beautiful.colors.hl_low
+end)
 
 return {
 	widget = sink_widget,
-	object = sink
+	object = sink_obj
 }

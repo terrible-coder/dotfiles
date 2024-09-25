@@ -1,4 +1,5 @@
-local sound = require("sys.sound")
+local pulse = require("sys").pulse
+local sound = pulse.object:implement(pulse.base)
 
 local sink_all = require(... .. ".output")
 local source_all = require(... .. ".input")
@@ -8,19 +9,19 @@ local sink_widget = sink_all.widget
 local source = source_all.object
 local source_widget = source_all.widget
 
-sound.ListenForSignal("org.PulseAudio.Core1.Device.VolumeUpdated", {
+sound:ListenForSignal(pulse.base..".Device.VolumeUpdated", {
 	sink.object_path, source.object_path,
 })
-sound.ListenForSignal("org.PulseAudio.Core1.Device.MuteUpdated", {
+sound:ListenForSignal(pulse.base..".Device.MuteUpdated", {
 	sink.object_path, source.object_path,
 })
-sound.ListenForSignal("org.PulseAudio.Core1.Device.ActivePortUpdated", {
+sound:ListenForSignal(pulse.base..".Device.ActivePortUpdated", {
 	sink.object_path, source.object_path,
 })
-sound.ListenForSignal("org.PulseAudio.Core1.Device.StateUpdated", {
+sound:ListenForSignal(pulse.base..".Device.StateUpdated", {
 	source.object_path,
 })
-sound.ListenForSignal("org.PulseAudio.Core1.DevicePort.AvailableChanged", { })
+sound:ListenForSignal(pulse.base..".DevicePort.AvailableChanged", { })
 
 return {
 	sink = sink_widget,
