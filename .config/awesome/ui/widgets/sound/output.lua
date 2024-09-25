@@ -26,23 +26,13 @@ local function volume_percent(volume, base_volume)
 	return math.ceil(100 * volume / base_volume)
 end
 
-local function volume_text(mute, volume, base_volume)
-	if mute then
-		return "Muted"
-	else
-		return volume_percent(volume, base_volume)
-	end
-end
-
 local sink_path = core_core:GetSinkByName("@DEFAULT_SINK@")
 local sink_obj = dbus.ObjectProxy.new(core_obj.connection, sink_path, nil)
 local sink_props = sink_obj:implement(IFACE.properties)
 local sink_device = sink_obj:implement(IFACE.device)
 
 local sink_label = wibox.widget.textbox()
-sink_label.text = volume_text(
-	sink_device.Mute, sink_device.Volume[1], sink_device.BaseVolume
-)
+sink_label.text = volume_percent(sink_device.Volume[1], sink_device.BaseVolume)
 local sink_icon = wibox.widget.textbox("")
 sink_icon.font = beautiful.fonts.nerd..16
 
@@ -70,6 +60,7 @@ local sink_widget = wibox.widget({
 	{
 		widget = wibox.container.background,
 		bg = beautiful.colors.hl_low,
+		fg = sink_device.Mute and beautiful.colors.muted or nil,
 		shape = partial.right,
 		shape_border_width = dpi(1),
 		shape_border_color = beautiful.colors.foam,
@@ -155,7 +146,7 @@ for i, path in ipairs(sink_device.Ports) do
 		end)
 	)
 	p.on.AvailableChanged(function(available)
-		if available == 1 then
+		if available == snd_enums.NO then
 			item.fg = beautiful.colors.muted
 		else
 			item.fg = nil
@@ -239,13 +230,15 @@ Capi.awesome.connect_signal("popup_show", function(uid)
 end)
 
 sink_device.on.VolumeUpdated(function(volume)
-	local mute = sink_props:Get(IFACE.device, "Mute")
-	sink_label.text = volume_text(mute, volume[1], sink_device.BaseVolume)
+	sink_label.text = volume_percent(volume[1], sink_device.BaseVolume)
 	slider.value = volume_percent(volume[1], sink_device.BaseVolume)
 end)
 sink_device.on.MuteUpdated(function(mute)
-	local volume = sink_props:Get(IFACE.device, "Volume")
-	sink_label.text = volume_text(mute, volume[1], sink_device.BaseVolume)
+	if mute then
+		sink_widget.children[2].fg = beautiful.colors.muted
+	else
+		sink_widget.children[2].fg = nil
+	end
 end)
 sink_device.on.ActivePortUpdated(function(active_port_path)
 	if active_port_path == _active_port then return end

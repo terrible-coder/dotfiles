@@ -32,22 +32,14 @@ local function volume_percent(volume, base_volume)
 	return math.ceil(10 * volume / base_volume)
 end
 
-local function volume_text(mute, volume, base_volume)
-	if mute then
-		return "Muted"
-	else
-		return volume_percent(volume, base_volume)
-	end
-end
-
 local source_path = core_core:GetSourceByName("@DEFAULT_SOURCE@")
 local source_obj = dbus.ObjectProxy.new(core_obj.connection, source_path, nil)
 local source_props = source_obj:implement(IFACE.properties)
 local source_device = source_obj:implement(IFACE.device)
 
 local source_label = wibox.widget.textbox()
-source_label.text = volume_text(
-	source_device.Mute, source_device.Volume[1], source_device.BaseVolume
+source_label.text = volume_percent(
+	source_device.Volume[1], source_device.BaseVolume
 )
 local source_icon = wibox.widget.textbox(source_device.State == 0 and "󰍬" or "󰍮")
 source_icon.font = beautiful.fonts.nerd..12
@@ -69,6 +61,7 @@ local source_widget = wibox.widget({
 	{
 		widget = wibox.container.background,
 		bg = beautiful.colors.hl_low,
+		fg = source_device.Mute and beautiful.colors.muted or nil,
 		shape = function(cr, w, h)
 			gshape.partially_rounded_rect(cr, w, h, false, true, true, false, dpi(2))
 		end,
@@ -242,13 +235,15 @@ Capi.awesome.connect_signal("popup_show", function(uid)
 end)
 
 source_device.on.VolumeUpdated(function(volume)
-	local mute = source_props:Get(IFACE.device, "Mute")
-	source_label.text = volume_text(mute, volume[1], source_device.BaseVolume)
+	source_label.text = volume_percent(volume[1], source_device.BaseVolume)
 	slider.value = volume_percent(volume[1], source_device.BaseVolume)
 end)
 source_device.on.MuteUpdated(function(mute)
-	local volume = source_props:Get(IFACE.device, "Volume")
-	source_label.text = volume_text(mute, volume[1], source_device.BaseVolume)
+	if mute then
+		source_widget.children[2].fg = beautiful.colors.muted
+	else
+		source_widget.children[2].fg = nil
+	end
 end)
 source_device.on.ActivePortUpdated(function(active_port_path)
 	if active_port_path == _active_port then return end
