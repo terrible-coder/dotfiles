@@ -9,7 +9,6 @@ local beautiful = require("beautiful")
 local dpi = beautiful.xresources.apply_dpi
 local naughty = require("naughty")
 
-local dbus = require("modules.dbus-lua")
 local bluetooth = require("sys").bluetooth
 local IFACE = {
 	properties = "org.freedesktop.DBus.Properties",

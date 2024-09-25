@@ -35,35 +35,17 @@ local icons = {
 
 local wgt_icon = wibox.widget.textbox(icons.unavailable)
 wgt_icon.font = beautiful.fonts.nerd..16
-local wgt_label = wibox.widget.textbox("WiFi")
 
 local bar_widget = wibox.widget({
-	layout = wibox.layout.fixed.horizontal,
+	widget = wibox.container.background,
+	shape = function(cr, w, h)
+		gshape.partially_rounded_rect(cr, w, h, true, false, false, true, dpi(2))
+	end,
+	fg = beautiful.colors.hl_low, bg = beautiful.colors.foam,
 	{
-		widget = wibox.container.background,
-		shape = function(cr, w, h)
-			gshape.partially_rounded_rect(cr, w, h, true, false, false, true, dpi(2))
-		end,
-		fg = beautiful.colors.hl_low, bg = beautiful.colors.foam,
-		{
-			widget = wibox.container.margin,
-			left = dpi(4), right = dpi(3), top = dpi(2), bottom = dpi(2),
-			wgt_icon,
-		}
-	},
-	{
-		widget = wibox.container.background,
-		bg = beautiful.colors.hl_low,
-		shape = function(cr, w, h)
-			gshape.partially_rounded_rect(cr, w, h, false, true, true, false, dpi(2))
-		end,
-		shape_border_width = dpi(1),
-		shape_border_color = beautiful.colors.foam,
-		{
-			widget = wibox.container.margin,
-			left = dpi(7), right = dpi(5),
-			wgt_label,
-		}
+		widget = wibox.container.margin,
+		left = dpi(4), right = dpi(3), top = dpi(2), bottom = dpi(2),
+		wgt_icon,
 	}
 })
 
@@ -109,7 +91,6 @@ local function prepare_ap(path)
 end
 
 wl_device.on.StateChanged(function(new, _, _)
-	wgt_label.text = "WiFi"
 	if new == net_enums.DeviceState.UNKNOWN then
 		wgt_icon.text = icons.unknown
 	elseif new == net_enums.DeviceState.UNAVAILABLE then
@@ -121,8 +102,6 @@ wl_device.on.StateChanged(function(new, _, _)
 		wgt_icon.text = icons.connecting
 	elseif new == net_enums.DeviceState.ACTIVATED then
 		wgt_icon.text = icons.activated[1]
-	else
-		wgt_label.text = "state: "..new
 	end
 end)
 
@@ -133,7 +112,6 @@ wl_wireless.on.PropertiesChanged(function(changed)
 end)
 
 local state = wl_device.State
-wgt_label.text = "WiFi"
 if state == net_enums.DeviceState.UNKNOWN then
 	wgt_icon.text = icons.unknown
 elseif state == net_enums.DeviceState.UNAVAILABLE then
@@ -145,8 +123,6 @@ elseif state >= net_enums.DeviceState.PREPARE and
 	wgt_icon.text = icons.connecting
 elseif state == net_enums.DeviceState.ACTIVATED then
 	wgt_icon.text = icons.activated[1]
-else
-	wgt_label.text = "state: "..state
 end
 prepare_ap(wl_wireless.ActiveAccessPoint)
 
