@@ -6,8 +6,10 @@ local beautiful = require("beautiful")
 local dpi = beautiful.xresources.apply_dpi
 local wibox = require("wibox")
 local gshape = require("gears.shape")
+local gmath = require("gears.math")
 local naughty = require("naughty")
 
+local GLib = require("lgi").GLib
 local dbus = require("modules.dbus-lua")
 local wifi = require("sys").wifi
 local net_enums = wifi.enums
@@ -18,10 +20,12 @@ local IFACE = {
 	device = wifi.base..".Device",
 	wireless = wifi.base..".Device.Wireless",
 	access_point = wifi.base..".AccessPoint",
+	statistics = wifi.base..".Device.Statistics",
 }
--- local wl_props = wl_obj:implement(IFACE.properties)
+local wl_props = wl_obj:implement(IFACE.properties)
 local wl_device = wl_obj:implement(IFACE.device)
 local wl_wireless = wl_obj:implement(IFACE.wireless)
+local wl_stats = wl_obj:implement(IFACE.statistics)
 
 local icons = {
 	unknown = "󰤫",
@@ -217,6 +221,64 @@ end)
 wl_wireless.on.PropertiesChanged(function(changed)
 	if changed.ActiveAccessPoint ~= nil then
 		prepare_ap(changed.ActiveAccessPoint)
+	end
+end)
+
+wl_props:SetAsync(
+	function() end, nil,
+	IFACE.statistics, "RefreshRateMs", GLib.Variant.new("u", 5000)
+)
+local _received = {
+	bytes = 0,
+	time = 0
+}
+local _transferred = {
+	bytes = 0,
+	time = 0
+}
+wl_stats.on.PropertiesChanged(function(changed)
+	local units = { "B/s", "KB/s", "MB/s", "GB/s" }
+	if changed.RxBytes then
+		if _received.time == 0 then
+			_received.time = os.time()
+			_received.bytes = changed.RxBytes
+		else
+			local time_now = os.time()
+			local bytes_now = changed.RxBytes
+			local d_bytes = bytes_now - _received.bytes
+			local d_time = time_now - _received.time
+			_received.bytes = bytes_now
+			_received.time = time_now
+			local rx_rate = d_bytes / d_time
+			local r_unit = 1
+			while rx_rate > 1024 do
+				rx_rate = rx_rate / 1024
+				r_unit = r_unit + 1
+			end
+			rx_rate = gmath.round(rx_rate)
+			conn_recieve.text = tostring(rx_rate).." "..units[r_unit]
+		end
+	end
+	if changed.TxBytes then
+		if _transferred.time == 0 then
+			_transferred.time = os.time()
+			_transferred.bytes = changed.TxBytes
+		else
+			local time_now = os.time()
+			local bytes_now = changed.TxBytes
+			local d_bytes = bytes_now - _transferred.bytes
+			local d_time = time_now - _transferred.time
+			_transferred.bytes = bytes_now
+			_transferred.time = time_now
+			local tx_rate = d_bytes / d_time
+			local t_unit = 1
+			while tx_rate > 1024 do
+				tx_rate = tx_rate / 1024
+				t_unit = t_unit + 1
+			end
+			tx_rate = gmath.round(tx_rate)
+			conn_transfer.text = tostring(tx_rate).." "..units[t_unit]
+		end
 	end
 end)
 
