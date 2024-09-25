@@ -32,10 +32,11 @@ wgt_icon.font = beautiful.fonts.nerd..12
 local bar_widget = wibox.widget({
 	widget = wibox.container.background,
 	shape = function(cr, w, h) gshape.rounded_rect(cr, w, h, dpi(2)) end,
-	fg = beautiful.colors.hl_low, bg = beautiful.colors.foam,
+	shape_border_width = dpi(1),
+	shape_border_color = beautiful.colors.foam,
 	{
 		widget = wibox.container.margin,
-		left = dpi(5), right = dpi(5), top = dpi(2), bottom = dpi(2),
+		left = dpi(4), right = dpi(4), top = dpi(2), bottom = dpi(2),
 		wgt_icon,
 	}
 })
@@ -99,8 +100,12 @@ discoverable_status:buttons(
 local powered = bl_adapter.Powered
 power_status.power = powered
 if powered then
+	bar_widget.bg = beautiful.colors.foam
+	bar_widget.fg = beautiful.colors.hl_low
 	discoverable_status.fg = nil
 else
+	bar_widget.bg = beautiful.colors.hl_low
+	bar_widget.fg = beautiful.colors.foam
 	discoverable_status.fg = beautiful.colors.muted
 end
 local discoverable = bl_adapter.Discoverable
@@ -176,9 +181,13 @@ bl_adapter.on.PropertiesChanged(function(changed)
 		})
 		if changed.Powered then
 			wgt_icon.text = icons.ON
+			bar_widget.bg = beautiful.colors.foam
+			bar_widget.fg = beautiful.colors.hl_low
 			discoverable_status.fg = nil
 		else
 			wgt_icon.text = icons.OFF
+			bar_widget.bg = beautiful.colors.hl_low
+			bar_widget.fg = beautiful.colors.foam
 			discoverable_status.fg = beautiful.colors.muted
 		end
 		power_status.power = changed.Powered

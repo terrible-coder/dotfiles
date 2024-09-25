@@ -38,13 +38,12 @@ wgt_icon.font = beautiful.fonts.nerd..16
 
 local bar_widget = wibox.widget({
 	widget = wibox.container.background,
-	shape = function(cr, w, h)
-		gshape.partially_rounded_rect(cr, w, h, true, false, false, true, dpi(2))
-	end,
-	fg = beautiful.colors.hl_low, bg = beautiful.colors.foam,
+	shape = function(cr, w, h) gshape.rounded_rect(cr, w, h, dpi(2)) end,
+	shape_border_width = dpi(1),
+	shape_border_color = beautiful.colors.foam,
 	{
 		widget = wibox.container.margin,
-		left = dpi(4), right = dpi(3), top = dpi(2), bottom = dpi(2),
+		left = dpi(4), right = dpi(4), top = dpi(2), bottom = dpi(2),
 		wgt_icon,
 	}
 })
@@ -93,15 +92,25 @@ end
 wl_device.on.StateChanged(function(new, _, _)
 	if new == net_enums.DeviceState.UNKNOWN then
 		wgt_icon.text = icons.unknown
+		bar_widget.bg = beautiful.colors.hl_low
+		bar_widget.fg = beautiful.colors.foam
 	elseif new == net_enums.DeviceState.UNAVAILABLE then
 		wgt_icon.text = icons.unavailable
+		bar_widget.bg = beautiful.colors.hl_low
+		bar_widget.fg = beautiful.colors.foam
 	elseif new == net_enums.DeviceState.DISCONNECTED then
 		wgt_icon.text = icons.disconnected
+		bar_widget.bg = beautiful.colors.hl_low
+		bar_widget.fg = beautiful.colors.foam
 	elseif new >= net_enums.DeviceState.PREPARE and
 		     new <= net_enums.DeviceState.SECONDARIES then
 		wgt_icon.text = icons.connecting
+		bar_widget.bg = beautiful.colors.foam
+		bar_widget.fg = beautiful.colors.hl_low
 	elseif new == net_enums.DeviceState.ACTIVATED then
 		wgt_icon.text = icons.activated[1]
+		bar_widget.bg = beautiful.colors.foam
+		bar_widget.fg = beautiful.colors.hl_low
 	end
 end)
 
@@ -114,15 +123,25 @@ end)
 local state = wl_device.State
 if state == net_enums.DeviceState.UNKNOWN then
 	wgt_icon.text = icons.unknown
+	bar_widget.bg = beautiful.colors.hl_low
+	bar_widget.fg = beautiful.colors.foam
 elseif state == net_enums.DeviceState.UNAVAILABLE then
 	wgt_icon.text = icons.unavailable
+	bar_widget.bg = beautiful.colors.hl_low
+	bar_widget.fg = beautiful.colors.foam
 elseif state == net_enums.DeviceState.DISCONNECTED then
 	wgt_icon.text = icons.disconnected
+	bar_widget.bg = beautiful.colors.hl_low
+	bar_widget.fg = beautiful.colors.foam
 elseif state >= net_enums.DeviceState.PREPARE and
 	state <= net_enums.DeviceState.SECONDARIES then
 	wgt_icon.text = icons.connecting
+	bar_widget.bg = beautiful.colors.foam
+	bar_widget.fg = beautiful.colors.hl_low
 elseif state == net_enums.DeviceState.ACTIVATED then
 	wgt_icon.text = icons.activated[1]
+	bar_widget.bg = beautiful.colors.foam
+	bar_widget.fg = beautiful.colors.hl_low
 end
 prepare_ap(wl_wireless.ActiveAccessPoint)
 
