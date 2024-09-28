@@ -64,6 +64,31 @@ local bar_widget = wibox.widget({
 	}
 })
 
+local function state_updated(new, _, _)
+	if new == net_enums.DeviceState.UNKNOWN then
+		wgt_icon.text = icons.unknown
+		bar_widget.bg = beautiful.colors.hl_low
+		bar_widget.fg = beautiful.colors.foam
+	elseif new == net_enums.DeviceState.UNAVAILABLE then
+		wgt_icon.text = icons.unavailable
+		bar_widget.bg = beautiful.colors.hl_low
+		bar_widget.fg = beautiful.colors.foam
+	elseif new == net_enums.DeviceState.DISCONNECTED then
+		wgt_icon.text = icons.disconnected
+		bar_widget.bg = beautiful.colors.hl_low
+		bar_widget.fg = beautiful.colors.foam
+	elseif new >= net_enums.DeviceState.PREPARE and
+		     new <= net_enums.DeviceState.SECONDARIES then
+		wgt_icon.text = icons.connecting
+		bar_widget.bg = beautiful.colors.foam
+		bar_widget.fg = beautiful.colors.hl_low
+	elseif new == net_enums.DeviceState.ACTIVATED then
+		wgt_icon.text = icons.activated[1]
+		bar_widget.bg = beautiful.colors.foam
+		bar_widget.fg = beautiful.colors.hl_low
+	end
+end
+
 local _last_level = 0
 local active_ap = nil
 local function prepare_ap(path)
@@ -103,6 +128,38 @@ local function prepare_ap(path)
 			end
 		end
 	end)
+end
+
+local _received    = { bytes = 0, time = 0 }
+local _transferred = { bytes = 0, time = 0 }
+local function exchange_rate(bytes_now, type)
+	local units = { "B/s", "KB/s", "MB/s", "GB/s" }
+	local obj = nil
+	if type == "recv" then obj = _received
+	elseif type == "tran" then obj = _transferred
+	end
+	if not obj then
+		error("Incorrect exchange type. Expected 'recv' or 'tran'")
+	end
+	if obj.time == 0 then
+		obj.time = os.time()
+		obj.bytes = bytes_now
+		return "0 B/s"
+	else
+		local time_now = os.time()
+		local d_bytes = bytes_now - obj.bytes
+		local d_time = time_now - obj.time
+		obj.bytes = bytes_now
+		obj.time = time_now
+		local xx_rate = d_bytes / d_time
+		local x_unit = 1
+		while xx_rate > 1024 do
+			xx_rate = xx_rate / 1024
+			x_unit = x_unit + 1
+		end
+		xx_rate = gmath.round(xx_rate)
+		return tostring(xx_rate).." "..units[x_unit]
+	end
 end
 
 local radio_status = wibox.widget({
@@ -273,30 +330,7 @@ Capi.awesome.connect_signal("popup_show", function(uid)
 	})
 end)
 
-wl_device.on.StateChanged(function(new, _, _)
-	if new == net_enums.DeviceState.UNKNOWN then
-		wgt_icon.text = icons.unknown
-		bar_widget.bg = beautiful.colors.hl_low
-		bar_widget.fg = beautiful.colors.foam
-	elseif new == net_enums.DeviceState.UNAVAILABLE then
-		wgt_icon.text = icons.unavailable
-		bar_widget.bg = beautiful.colors.hl_low
-		bar_widget.fg = beautiful.colors.foam
-	elseif new == net_enums.DeviceState.DISCONNECTED then
-		wgt_icon.text = icons.disconnected
-		bar_widget.bg = beautiful.colors.hl_low
-		bar_widget.fg = beautiful.colors.foam
-	elseif new >= net_enums.DeviceState.PREPARE and
-		     new <= net_enums.DeviceState.SECONDARIES then
-		wgt_icon.text = icons.connecting
-		bar_widget.bg = beautiful.colors.foam
-		bar_widget.fg = beautiful.colors.hl_low
-	elseif new == net_enums.DeviceState.ACTIVATED then
-		wgt_icon.text = icons.activated[1]
-		bar_widget.bg = beautiful.colors.foam
-		bar_widget.fg = beautiful.colors.hl_low
-	end
-end)
+wl_device.on.StateChanged(state_updated)
 
 wl_wireless.on.PropertiesChanged(function(changed)
 	if changed.ActiveAccessPoint ~= nil then
@@ -308,83 +342,16 @@ wl_props:SetAsync(
 	function() end, nil,
 	IFACE.statistics, "RefreshRateMs", GLib.Variant.new("u", 5000)
 )
-local _received = {
-	bytes = 0,
-	time = 0
-}
-local _transferred = {
-	bytes = 0,
-	time = 0
-}
 wl_stats.on.PropertiesChanged(function(changed)
-	local units = { "B/s", "KB/s", "MB/s", "GB/s" }
 	if changed.RxBytes then
-		if _received.time == 0 then
-			_received.time = os.time()
-			_received.bytes = changed.RxBytes
-		else
-			local time_now = os.time()
-			local bytes_now = changed.RxBytes
-			local d_bytes = bytes_now - _received.bytes
-			local d_time = time_now - _received.time
-			_received.bytes = bytes_now
-			_received.time = time_now
-			local rx_rate = d_bytes / d_time
-			local r_unit = 1
-			while rx_rate > 1024 do
-				rx_rate = rx_rate / 1024
-				r_unit = r_unit + 1
-			end
-			rx_rate = gmath.round(rx_rate)
-			conn_recieve.text = tostring(rx_rate).." "..units[r_unit]
-		end
+		conn_recieve.text = exchange_rate(changed.RxBytes, "recv")
 	end
 	if changed.TxBytes then
-		if _transferred.time == 0 then
-			_transferred.time = os.time()
-			_transferred.bytes = changed.TxBytes
-		else
-			local time_now = os.time()
-			local bytes_now = changed.TxBytes
-			local d_bytes = bytes_now - _transferred.bytes
-			local d_time = time_now - _transferred.time
-			_transferred.bytes = bytes_now
-			_transferred.time = time_now
-			local tx_rate = d_bytes / d_time
-			local t_unit = 1
-			while tx_rate > 1024 do
-				tx_rate = tx_rate / 1024
-				t_unit = t_unit + 1
-			end
-			tx_rate = gmath.round(tx_rate)
-			conn_transfer.text = tostring(tx_rate).." "..units[t_unit]
-		end
+		conn_transfer.text = exchange_rate(changed.TxBytes, "tran")
 	end
 end)
 
-local state = wl_device.State
-if state == net_enums.DeviceState.UNKNOWN then
-	wgt_icon.text = icons.unknown
-	bar_widget.bg = beautiful.colors.hl_low
-	bar_widget.fg = beautiful.colors.foam
-elseif state == net_enums.DeviceState.UNAVAILABLE then
-	wgt_icon.text = icons.unavailable
-	bar_widget.bg = beautiful.colors.hl_low
-	bar_widget.fg = beautiful.colors.foam
-elseif state == net_enums.DeviceState.DISCONNECTED then
-	wgt_icon.text = icons.disconnected
-	bar_widget.bg = beautiful.colors.hl_low
-	bar_widget.fg = beautiful.colors.foam
-elseif state >= net_enums.DeviceState.PREPARE and
-	state <= net_enums.DeviceState.SECONDARIES then
-	wgt_icon.text = icons.connecting
-	bar_widget.bg = beautiful.colors.foam
-	bar_widget.fg = beautiful.colors.hl_low
-elseif state == net_enums.DeviceState.ACTIVATED then
-	wgt_icon.text = icons.activated[1]
-	bar_widget.bg = beautiful.colors.foam
-	bar_widget.fg = beautiful.colors.hl_low
-end
+state_updated(wl_device.State)
 prepare_ap(wl_wireless.ActiveAccessPoint)
 
 return bar_widget
