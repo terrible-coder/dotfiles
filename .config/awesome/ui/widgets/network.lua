@@ -210,12 +210,45 @@ local conn_expand = wibox.widget({
 local conn_recieve = wibox.widget.textbox("0 B/s")
 local conn_transfer = wibox.widget.textbox("0 B/s")
 
+local function update_available_connections(connections)
+	for _, info in ipairs(wifi.known_connections) do
+		info.available = false
+		for _, conn_path in ipairs(connections) do
+			if info.connection == conn_path then
+				info.available = true
+				break
+			end
+		end
+	end
+end
+update_available_connections(wl_device.AvailableConnections)
+
 local conn_list = wibox.layout.fixed.vertical()
-local available = wl_props:Get(IFACE.device, "AvailableConnections")
-for _, setting in ipairs(available) do
-	local conn_obj = dbus.ObjectProxy.new(wl_obj.connection, setting, wl_obj.name)
-	local conn_sett = conn_obj:implement(wifi.base..".Settings.Connection")
-	conn_list:add(wibox.widget.textbox(conn_sett:GetSettings().connection.id))
+for _, info in pairs(wifi.known_connections) do
+	local item = wibox.widget({
+		widget = wibox.container.background,
+		{
+			widget = wibox.container.margin,
+			top = dpi(2), bottom = dpi(2),
+			{
+				widget = wibox.widget.textbox,
+				text = info.id
+			},
+		}
+	})
+	if not info.available then
+		item.fg = beautiful.colors.muted
+	end
+	item:buttons(
+	awful.button({ }, 1, function()
+		if not info.available then return end
+		naughty.notify({
+			title = "Wireless connection",
+			text = ("Attempt to connect to '%s'"):format(info.id)
+		})
+	end)
+	)
+	conn_list:add(item)
 end
 
 local known_conn = awful.popup({
@@ -331,6 +364,22 @@ Capi.awesome.connect_signal("popup_show", function(uid)
 end)
 
 wl_device.on.StateChanged(state_updated)
+wl_device.on.PropertiesChanged(function(changed)
+	if changed.AvailableConnections then
+		naughty.notify({
+			title = "Wireless connections available",
+			text = "connections: "..#changed.AvailableConnections
+		})
+		update_available_connections(changed.AvailableConnections)
+		for i, info in ipairs(wifi.known_connections) do
+			if info.available then
+				conn_list.children[i].fg = nil
+			else
+				conn_list.children[i].fg = beautiful.colors.muted
+			end
+		end
+	end
+end)
 
 wl_wireless.on.PropertiesChanged(function(changed)
 	if changed.ActiveAccessPoint ~= nil then
