@@ -223,6 +223,10 @@ local function update_available_connections(connections)
 end
 update_available_connections(wl_device.AvailableConnections)
 
+local active = {
+	connection = "/",
+	profile = "/"
+}
 local conn_list = wibox.layout.fixed.vertical()
 for _, info in pairs(wifi.known_connections) do
 	local item = wibox.widget({
@@ -240,14 +244,25 @@ for _, info in pairs(wifi.known_connections) do
 		item.fg = beautiful.colors.muted
 	end
 	item:buttons(
-	awful.button({ }, 1, function()
-		if not info.available then return end
-		naughty.notify({
-			title = "Wireless connection",
-			text = ("Attempt to connect to '%s'"):format(info.id)
-		})
-		wifi.server:ActivateConnection(info.connection, wl_device.object_path, "/")
-	end)
+		awful.button({ }, 1, function()
+			if not info.available then return end
+			if active.profile == info.connection then
+				wifi.server:DeactivateConnection(active.connection)
+				active.connection = "/"
+				active.profile = "/"
+				return
+			end
+			naughty.notify({
+				title = "Wireless connection",
+				text = ("Attempt to connect to '%s'"):format(info.id)
+			})
+			active.connection = wifi.server:ActivateConnection(
+				info.connection, wl_device.object_path, "/"
+			)
+			if active.connection ~= "/" then
+				active.profile = info.connection
+			end
+		end)
 	)
 	conn_list:add(item)
 end
