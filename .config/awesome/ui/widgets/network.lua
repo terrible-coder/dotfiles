@@ -246,6 +246,7 @@ for _, info in pairs(wifi.known_connections) do
 			title = "Wireless connection",
 			text = ("Attempt to connect to '%s'"):format(info.id)
 		})
+		wifi.server:ActivateConnection(info.connection, wl_device.object_path, "/")
 	end)
 	)
 	conn_list:add(item)
@@ -366,10 +367,6 @@ end)
 wl_device.on.StateChanged(state_updated)
 wl_device.on.PropertiesChanged(function(changed)
 	if changed.AvailableConnections then
-		naughty.notify({
-			title = "Wireless connections available",
-			text = "connections: "..#changed.AvailableConnections
-		})
 		update_available_connections(changed.AvailableConnections)
 		for i, info in ipairs(wifi.known_connections) do
 			if info.available then
