@@ -224,9 +224,15 @@ end
 update_available_connections(wl_device.AvailableConnections)
 
 local active = {
-	connection = "/",
+	connection = wl_device.ActiveConnection,
 	profile = "/"
 }
+if wl_device.ActiveConnection ~= "/" then
+	local ac = dbus.ObjectProxy.new(
+		dbus.Bus.SYSTEM, wl_device.ActiveConnection, wl_obj.name
+	):implement(wifi.base..".Connection.Active")
+	active.profile = ac.Connection
+end
 local conn_list = wibox.layout.fixed.vertical()
 for _, info in pairs(wifi.known_connections) do
 	local item = wibox.widget({
