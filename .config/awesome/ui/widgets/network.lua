@@ -149,6 +149,9 @@ local function exchange_rate(bytes_now, type)
 		local time_now = os.time()
 		local d_bytes = bytes_now - obj.bytes
 		local d_time = time_now - obj.time
+		if d_time == 0 then
+			return "0 B/s"
+		end
 		obj.bytes = bytes_now
 		obj.time = time_now
 		local xx_rate = d_bytes / d_time
