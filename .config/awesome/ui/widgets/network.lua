@@ -174,7 +174,13 @@ local conn_label = wibox.widget({
 			widget = wibox.widget.textbox,
 			text = "Connection name"
 		}
-	}
+	},
+	set_id = function(self, id)
+		self.children[1].children[1].text = id
+	end,
+	get_id = function(self)
+		return self.children[1].children[1].text
+	end,
 })
 
 local conn_expand = wibox.widget({
@@ -218,6 +224,16 @@ local function update_available_connections(connections)
 end
 update_available_connections(wl_device.AvailableConnections)
 
+for _, info in ipairs(wifi.known_connections) do
+	if info.connection == active.profile then
+		conn_label.id = info.id
+		break
+	end
+end
+if conn_label.id == "Connection name" then
+	conn_label.id = "Not connected"
+end
+
 local conn_list = wibox.layout.fixed.vertical()
 for _, info in pairs(wifi.known_connections) do
 	local item = wibox.widget({
@@ -241,6 +257,7 @@ for _, info in pairs(wifi.known_connections) do
 				wifi.server:DeactivateConnection(active.connection)
 				active.connection = "/"
 				active.profile = "/"
+				conn_label.id = "Not connected"
 				return
 			end
 			-- naughty.notify({
@@ -252,11 +269,25 @@ for _, info in pairs(wifi.known_connections) do
 			)
 			if active.connection ~= "/" then
 				active.profile = info.connection
+				conn_label.id = info.id
 			end
 		end)
 	)
 	conn_list:add(item)
 end
+
+wl_device.on.PropertiesChanged(function(changed)
+	if changed.AvailableConnections then
+		update_available_connections(changed.AvailableConnections)
+		for i, info in ipairs(wifi.known_connections) do
+			if info.available then
+				conn_list.children[i].fg = nil
+			else
+				conn_list.children[i].fg = beautiful.colors.muted
+			end
+		end
+	end
+end)
 
 local known_conn = awful.popup({
 	widget = {
@@ -418,19 +449,6 @@ Capi.awesome.connect_signal("popup_show", function(uid)
 		mode = "cursor_inside",
 		offset = { y = 5 },
 	})
-end)
-
-wl_device.on.PropertiesChanged(function(changed)
-	if changed.AvailableConnections then
-		update_available_connections(changed.AvailableConnections)
-		for i, info in ipairs(wifi.known_connections) do
-			if info.available then
-				conn_list.children[i].fg = nil
-			else
-				conn_list.children[i].fg = beautiful.colors.muted
-			end
-		end
-	end
 end)
 
 return bar_widget
