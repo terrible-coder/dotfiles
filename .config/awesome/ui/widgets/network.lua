@@ -14,6 +14,7 @@ local dbus = require("modules.dbus-lua")
 local wifi = require("sys").wifi
 local net_enums = wifi.enums
 
+------ DBus Objects ------
 local wl_obj = wifi.object
 local IFACE = {
 	properties = "org.freedesktop.DBus.Properties",
@@ -21,6 +22,7 @@ local IFACE = {
 	wireless = wifi.base..".Device.Wireless",
 	access_point = wifi.base..".AccessPoint",
 	statistics = wifi.base..".Device.Statistics",
+	active_conn = wifi.base..".Connection.Active",
 }
 local wl_props = wl_obj:implement(IFACE.properties)
 local wl_device = wl_obj:implement(IFACE.device)
@@ -48,6 +50,8 @@ local partial = {
 		gshape.partially_rounded_rect(cr, w, h, false, true, true, false, dpi(2))
 	end
 }
+
+------ Device state and Access Point strength ------
 
 local wgt_icon = wibox.widget.textbox(icons.unavailable)
 wgt_icon.font = beautiful.fonts.nerd..16
@@ -88,6 +92,8 @@ local function state_updated(new, _, _)
 		bar_widget.fg = beautiful.colors.hl_low
 	end
 end
+state_updated(wl_device.State)
+wl_device.on.StateChanged(state_updated)
 
 local _last_level = 0
 local active_ap = nil
@@ -129,42 +135,14 @@ local function prepare_ap(path)
 		end
 	end)
 end
+prepare_ap(wl_wireless.ActiveAccessPoint)
+wl_wireless.on.PropertiesChanged(function(changed)
+	if changed.ActiveAccessPoint ~= nil then
+		prepare_ap(changed.ActiveAccessPoint)
+	end
+end)
 
-local _received    = { bytes = 0, time = 0 }
-local _transferred = { bytes = 0, time = 0 }
-local function exchange_rate(bytes_now, type)
-	local units = { "B/s", "KB/s", "MB/s", "GB/s" }
-	local obj = nil
-	if type == "recv" then obj = _received
-	elseif type == "tran" then obj = _transferred
-	end
-	if not obj then
-		error("Incorrect exchange type. Expected 'recv' or 'tran'")
-	end
-	if obj.time == 0 then
-		obj.time = os.time()
-		obj.bytes = bytes_now
-		return "0 B/s"
-	else
-		local time_now = os.time()
-		local d_bytes = bytes_now - obj.bytes
-		local d_time = time_now - obj.time
-		if d_time == 0 then
-			return "0 B/s"
-		end
-		obj.bytes = bytes_now
-		obj.time = time_now
-		local xx_rate = d_bytes / d_time
-		local x_unit = 1
-		while xx_rate > 1024 do
-			xx_rate = xx_rate / 1024
-			x_unit = x_unit + 1
-		end
-		xx_rate = gmath.round(xx_rate)
-		return tostring(xx_rate).." "..units[x_unit]
-	end
-end
-
+------ WiFi device power ------
 local radio_status = wibox.widget({
 	widget = wibox.container.background,
 	bg = beautiful.colors.iris, fg = beautiful.colors.hl_low,
@@ -183,6 +161,8 @@ local radio_status = wibox.widget({
 	end
 })
 
+------ Connections ------
+
 local conn_label = wibox.widget({
 	widget = wibox.container.background,
 	bg = beautiful.colors.iris, fg = beautiful.colors.hl_low,
@@ -196,6 +176,7 @@ local conn_label = wibox.widget({
 		}
 	}
 })
+
 local conn_expand = wibox.widget({
 	widget = wibox.container.background,
 	bg = beautiful.colors.iris, fg = beautiful.colors.hl_low,
@@ -210,9 +191,20 @@ local conn_expand = wibox.widget({
 		}
 	}
 })
-local conn_recieve = wibox.widget.textbox("0 B/s")
-local conn_transfer = wibox.widget.textbox("0 B/s")
 
+-- maintain a cache of active connection and the connection setting profile
+local active = {
+	connection = wl_device.ActiveConnection,
+	profile = "/"
+}
+if wl_device.ActiveConnection ~= "/" then
+	local ac = dbus.ObjectProxy.new(
+		dbus.Bus.SYSTEM, wl_device.ActiveConnection, wl_obj.name
+	):implement(IFACE.active_conn)
+	active.profile = ac.Connection
+end
+
+-- update which of the known connections are currently available
 local function update_available_connections(connections)
 	for _, info in ipairs(wifi.known_connections) do
 		info.available = false
@@ -226,16 +218,6 @@ local function update_available_connections(connections)
 end
 update_available_connections(wl_device.AvailableConnections)
 
-local active = {
-	connection = wl_device.ActiveConnection,
-	profile = "/"
-}
-if wl_device.ActiveConnection ~= "/" then
-	local ac = dbus.ObjectProxy.new(
-		dbus.Bus.SYSTEM, wl_device.ActiveConnection, wl_obj.name
-	):implement(wifi.base..".Connection.Active")
-	active.profile = ac.Connection
-end
 local conn_list = wibox.layout.fixed.vertical()
 for _, info in pairs(wifi.known_connections) do
 	local item = wibox.widget({
@@ -255,16 +237,16 @@ for _, info in pairs(wifi.known_connections) do
 	item:buttons(
 		awful.button({ }, 1, function()
 			if not info.available then return end
-			if active.profile == info.connection then
+			if info.connection == active.profile then
 				wifi.server:DeactivateConnection(active.connection)
 				active.connection = "/"
 				active.profile = "/"
 				return
 			end
-			naughty.notify({
-				title = "Wireless connection",
-				text = ("Attempt to connect to '%s'"):format(info.id)
-			})
+			-- naughty.notify({
+			-- 	title = "Wireless connection",
+			-- 	text = ("Attempt to connect to '%s'"):format(info.id)
+			-- })
 			active.connection = wifi.server:ActivateConnection(
 				info.connection, wl_device.object_path, "/"
 			)
@@ -303,6 +285,56 @@ conn_expand:buttons(
 		})
 	end)
 )
+
+local _received    = { bytes = 0, time = 0 }
+local _transferred = { bytes = 0, time = 0 }
+
+local function exchange_rate(bytes_now, type)
+	local units = { "B/s", "KB/s", "MB/s", "GB/s" }
+	local obj = nil
+	if type == "recv" then obj = _received
+	elseif type == "tran" then obj = _transferred
+	end
+	if not obj then
+		error("Incorrect exchange type. Expected 'recv' or 'tran'")
+	end
+	if obj.time == 0 then
+		obj.time = os.time()
+		obj.bytes = bytes_now
+		return "0 B/s"
+	end
+	local time_now = os.time()
+	local d_bytes = bytes_now - obj.bytes
+	local d_time = time_now - obj.time
+	obj.bytes = bytes_now
+	obj.time = time_now
+	if d_time == 0 then return "0 B/s" end
+	local xx_rate = d_bytes / d_time
+	local x_unit = 1
+	while xx_rate > 1024 do
+		xx_rate = xx_rate / 1024
+		x_unit = x_unit + 1
+	end
+	xx_rate = gmath.round(xx_rate)
+	return ("%d %s"):format(xx_rate, units[x_unit])
+end
+
+local conn_recieve = wibox.widget.textbox("0 B/s")
+local conn_transfer = wibox.widget.textbox("0 B/s")
+
+-- update data rates every 5000 milliseconds
+wl_props:SetAsync(
+	function() end, nil,
+	IFACE.statistics, "RefreshRateMs", GLib.Variant.new("u", 5000)
+)
+wl_stats.on.PropertiesChanged(function(changed)
+	if changed.RxBytes then
+		conn_recieve.text = exchange_rate(changed.RxBytes, "recv")
+	end
+	if changed.TxBytes then
+		conn_transfer.text = exchange_rate(changed.TxBytes, "tran")
+	end
+end)
 
 local wifi_popup = awful.popup({
 	widget = {
@@ -388,7 +420,6 @@ Capi.awesome.connect_signal("popup_show", function(uid)
 	})
 end)
 
-wl_device.on.StateChanged(state_updated)
 wl_device.on.PropertiesChanged(function(changed)
 	if changed.AvailableConnections then
 		update_available_connections(changed.AvailableConnections)
@@ -401,27 +432,5 @@ wl_device.on.PropertiesChanged(function(changed)
 		end
 	end
 end)
-
-wl_wireless.on.PropertiesChanged(function(changed)
-	if changed.ActiveAccessPoint ~= nil then
-		prepare_ap(changed.ActiveAccessPoint)
-	end
-end)
-
-wl_props:SetAsync(
-	function() end, nil,
-	IFACE.statistics, "RefreshRateMs", GLib.Variant.new("u", 5000)
-)
-wl_stats.on.PropertiesChanged(function(changed)
-	if changed.RxBytes then
-		conn_recieve.text = exchange_rate(changed.RxBytes, "recv")
-	end
-	if changed.TxBytes then
-		conn_transfer.text = exchange_rate(changed.TxBytes, "tran")
-	end
-end)
-
-state_updated(wl_device.State)
-prepare_ap(wl_wireless.ActiveAccessPoint)
 
 return bar_widget
