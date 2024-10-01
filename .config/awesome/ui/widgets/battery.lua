@@ -4,7 +4,6 @@ local Capi = {
 local awful = require("awful")
 local beautiful = require("beautiful")
 local dpi = beautiful.xresources.apply_dpi
-local gshape = require("gears.shape")
 local gmath = require("gears.math")
 local wibox = require("wibox")
 
@@ -32,9 +31,7 @@ local bar_wgt = wibox.widget({
 	layout = wibox.layout.fixed.horizontal,
 	{
 		widget = wibox.container.background,
-		shape = function(cr, w, h)
-			gshape.partially_rounded_rect(cr, w, h, true, false, false, true, dpi(2))
-		end,
+		shape = beautiful.shapes.partial_rounded_left,
 		fg = beautiful.colors.text, bg = beautiful.colors.pine,
 		{
 			widget = wibox.container.margin,
@@ -45,9 +42,7 @@ local bar_wgt = wibox.widget({
 	{
 		widget = wibox.container.background,
 		bg = beautiful.colors.hl_low,
-		shape = function(cr, w, h)
-			gshape.partially_rounded_rect(cr, w, h, false, true, true, false, dpi(2))
-		end,
+		shape = beautiful.shapes.partial_rounded_right,
 		shape_border_width = dpi(1),
 		shape_border_color = beautiful.colors.pine,
 		{
@@ -80,7 +75,7 @@ local battery_popup = awful.popup({
 			}
 		}
 	},
-	shape = function(cr, w, h) gshape.rounded_rect(cr, w, h, 5) end,
+	shape = beautiful.shapes.rounded_large,
 	border_width = dpi(2),
 	border_color = beautiful.colors.iris,
 	placement = { },

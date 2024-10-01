@@ -3,7 +3,6 @@ local Capi = {
 }
 local GLib = require("lgi").GLib
 local awful = require("awful")
-local gshape = require("gears.shape")
 local wibox = require("wibox")
 local beautiful = require("beautiful")
 local dpi = beautiful.xresources.apply_dpi
@@ -31,7 +30,7 @@ wgt_icon.font = beautiful.fonts.nerd..12
 
 local bar_widget = wibox.widget({
 	widget = wibox.container.background,
-	shape = function(cr, w, h) gshape.rounded_rect(cr, w, h, dpi(2)) end,
+	shape = beautiful.shapes.rounded_small,
 	shape_border_width = dpi(1),
 	shape_border_color = beautiful.colors.foam,
 	{
@@ -44,7 +43,7 @@ local bar_widget = wibox.widget({
 local power_status = wibox.widget({
 	widget = wibox.container.background,
 	bg = beautiful.colors.iris, fg = beautiful.colors.hl_low,
-	shape = function(cr, w, h) gshape.rounded_rect(cr, w, h, 2) end,
+	shape = beautiful.shapes.rounded_small,
 	{
 		widget = wibox.container.margin,
 		left = dpi(5), right = dpi(5), top = dpi(2), bottom = dpi(2),
@@ -140,7 +139,7 @@ local blue_popup = awful.popup({
 			}
 		}
 	},
-	shape = function(cr, w, h) gshape.rounded_rect(cr, w, h, 5) end,
+	shape = beautiful.shapes.rounded_large,
 	border_width = dpi(2),
 	border_color = beautiful.colors.iris,
 	placement = { },

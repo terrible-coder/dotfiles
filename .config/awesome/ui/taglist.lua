@@ -5,7 +5,6 @@ local awful = require("awful")
 local beautiful = require("beautiful")
 local dpi = beautiful.xresources.apply_dpi
 local gtable = require("gears.table")
-local gshape = require("gears.shape")
 local wibox = require("wibox")
 
 local modkey = require("config.vars").modkey
@@ -30,7 +29,7 @@ return function(s)
 		screen  = s,
 		filter  = awful.widget.taglist.filter.all,
 		buttons = taglist_buttons,
-		style = { shape = function(cr, w, h) gshape.rounded_rect(cr, w, h, 2) end },
+		style = { shape = beautiful.shapes.rounded_small },
 		layout = wibox.layout.flex.horizontal,
 		widget_template = {
 			widget = wibox.container.margin,
@@ -38,7 +37,7 @@ return function(s)
 			{
 				widget = wibox.container.background, id = "background_role",
 				fg = beautiful.colors.surface,
-				shape = function(cr, w, h) gshape.rounded_rect(cr, w, h, 2) end,
+				shape = beautiful.shapes.rounded_small,
 				{
 					widget = wibox.widget.textbox, id = "index_role",
 					align = "center", valign = "center",

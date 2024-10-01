@@ -28,7 +28,15 @@ theme.shapes = {
 	rounded_large = function(cr, w, h)
 		gshape.rounded_rect(cr, w, h, dpi(5))
 	end,
+	partial_rounded_left = function(cr, w, h)
+		gshape.partially_rounded_rect(cr, w, h, true, false, false, true, dpi(2))
+	end,
+	partial_rounded_right = function(cr, w, h)
+		gshape.partially_rounded_rect(cr, w, h, false, true, true, false, dpi(2))
+	end,
+	bar = gshape.rounded_bar,
 }
+
 theme.bg_normal     = theme.colors.base
 theme.bg_focus      = theme.colors.pine
 theme.bg_urgent     = theme.colors.love

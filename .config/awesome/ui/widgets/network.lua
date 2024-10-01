@@ -5,7 +5,6 @@ local awful = require("awful")
 local beautiful = require("beautiful")
 local dpi = beautiful.xresources.apply_dpi
 local wibox = require("wibox")
-local gshape = require("gears.shape")
 local gmath = require("gears.math")
 local naughty = require("naughty")
 
@@ -42,15 +41,6 @@ local icons = {
 	}
 }
 
-local partial = {
-	left = function(cr, w, h)
-		gshape.partially_rounded_rect(cr, w, h, true, false, false, true, dpi(2))
-	end,
-	right = function(cr, w, h)
-		gshape.partially_rounded_rect(cr, w, h, false, true, true, false, dpi(2))
-	end
-}
-
 ------ Device state and Access Point strength ------
 
 local wgt_icon = wibox.widget.textbox(icons.unavailable)
@@ -58,7 +48,7 @@ wgt_icon.font = beautiful.fonts.nerd..16
 
 local bar_widget = wibox.widget({
 	widget = wibox.container.background,
-	shape = function(cr, w, h) gshape.rounded_rect(cr, w, h, dpi(2)) end,
+	shape = beautiful.shapes.rounded_small,
 	shape_border_width = dpi(1),
 	shape_border_color = beautiful.colors.foam,
 	{
@@ -146,7 +136,7 @@ end)
 local radio_status = wibox.widget({
 	widget = wibox.container.background,
 	bg = beautiful.colors.iris, fg = beautiful.colors.hl_low,
-	shape = function(cr, w, h) gshape.rounded_rect(cr, w, h, 2) end,
+	shape = beautiful.shapes.rounded_small,
 	{
 		widget = wibox.container.margin,
 		left = dpi(5), right = dpi(5), top = dpi(2), bottom = dpi(2),
@@ -166,7 +156,7 @@ local radio_status = wibox.widget({
 local conn_label = wibox.widget({
 	widget = wibox.container.background,
 	bg = beautiful.colors.iris, fg = beautiful.colors.hl_low,
-	shape = partial.left,
+	shape = beautiful.shapes.partial_rounded_left,
 	{
 		widget = wibox.container.margin,
 		left = dpi(5), right = dpi(5), top = dpi(2), bottom = dpi(2),
@@ -186,7 +176,7 @@ local conn_label = wibox.widget({
 local conn_expand = wibox.widget({
 	widget = wibox.container.background,
 	bg = beautiful.colors.iris, fg = beautiful.colors.hl_low,
-	shape = partial.right,
+	shape = beautiful.shapes.partial_rounded_right,
 	{
 		widget = wibox.container.margin,
 		margins = dpi(2),
@@ -298,7 +288,7 @@ local known_conn = awful.popup({
 			conn_list
 		},
 	},
-	shape = function(cr, w, h) gshape.rounded_rect(cr, w, h, 5) end,
+	shape = beautiful.shapes.rounded_large,
 	border_width = dpi(2),
 	border_color = beautiful.colors.iris,
 	placement = { },
@@ -415,7 +405,7 @@ local wifi_popup = awful.popup({
 			}
 		}
 	},
-	shape = function(cr, w, h) gshape.rounded_rect(cr, w, h, 5) end,
+	shape = beautiful.shapes.rounded_large,
 	border_width = dpi(2),
 	border_color = beautiful.colors.iris,
 	placement = { },

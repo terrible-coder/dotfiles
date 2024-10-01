@@ -4,7 +4,6 @@ local Capi = {
 local awful = require("awful")
 local beautiful = require("beautiful")
 local dpi = beautiful.xresources.apply_dpi
-local gshape = require("gears.shape")
 local wibox = require("wibox")
 local naughty = require("naughty")
 
@@ -36,20 +35,11 @@ sink_label.text = volume_percent(sink_device.Volume[1], sink_device.BaseVolume)
 local sink_icon = wibox.widget.textbox("")
 sink_icon.font = beautiful.fonts.nerd..16
 
-local partial = {
-	left = function(cr, w, h)
-		gshape.partially_rounded_rect(cr, w, h, true, false, false, true, dpi(2))
-	end,
-	right = function(cr, w, h)
-		gshape.partially_rounded_rect(cr, w, h, false, true, true, false, dpi(2))
-	end
-}
-
 local sink_widget = wibox.widget({
 	layout = wibox.layout.fixed.horizontal,
 	{
 		widget = wibox.container.background,
-		shape = partial.left,
+		shape = beautiful.shapes.partial_rounded_left,
 		fg = beautiful.colors.hl_low, bg = beautiful.colors.foam,
 		{
 			widget = wibox.container.margin,
@@ -61,7 +51,7 @@ local sink_widget = wibox.widget({
 		widget = wibox.container.background,
 		bg = beautiful.colors.hl_low,
 		fg = sink_device.Mute and beautiful.colors.muted or nil,
-		shape = partial.right,
+		shape = beautiful.shapes.partial_rounded_right,
 		shape_border_width = dpi(1),
 		shape_border_color = beautiful.colors.foam,
 		{
@@ -75,9 +65,9 @@ local sink_widget = wibox.widget({
 local slider = wibox.widget({
 	widget = wibox.widget.slider,
 	bar_height = dpi(2),
-	bar_shape = gshape.rounded_bar,
+	bar_shape = beautiful.shapes.bar,
 	bar_color = beautiful.colors.pine,
-	handle_shape = function(cr, w, h) gshape.rounded_rect(cr, w, h, 2) end,
+	handle_shape = beautiful.shapes.rounded_small,
 	handle_width = dpi(10),
 	handle_margins = { top = 2, bottom = 2 },
 	minimum = 0, maximum = 100,
@@ -120,7 +110,7 @@ for i, path in ipairs(sink_device.Ports) do
 	)
 	local item = wibox.widget({
 		widget = wibox.container.background,
-		shape = function(cr, w, h) gshape.rounded_rect(cr, w, h, 2) end,
+		shape = beautiful.shapes.rounded_small,
 		{
 			widget = wibox.container.margin,
 			left = dpi(5), right = dpi(5), top = dpi(2), bottom = dpi(2),
@@ -197,7 +187,7 @@ local sink_popup = awful.popup({
 			},
 		}
 	},
-	shape = function(cr, w, h) gshape.rounded_rect(cr, w, h, 5) end,
+	shape = beautiful.shapes.rounded_large,
 	border_width = dpi(2),
 	border_color = beautiful.colors.iris,
 	placement = { },
