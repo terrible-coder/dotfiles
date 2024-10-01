@@ -10,8 +10,8 @@ local bar_wgt = wibox.widget({
 	layout = wibox.layout.fixed.horizontal,
 	{
 		widget = wibox.container.background,
+		bg = beautiful.bg_focus,
 		shape = beautiful.shapes.partial_rounded_left,
-		fg = beautiful.colors.hl_low, bg = beautiful.colors.rose,
 		{
 			widget = wibox.container.margin,
 			left = dpi(4), right = dpi(3), top = dpi(2), bottom = dpi(2),
@@ -20,10 +20,9 @@ local bar_wgt = wibox.widget({
 	},
 	{
 		widget = wibox.container.background,
-		bg = beautiful.colors.hl_low,
 		shape = beautiful.shapes.partial_rounded_right,
 		shape_border_width = dpi(1),
-		shape_border_color = beautiful.colors.rose,
+		shape_border_color = beautiful.bg_focus,
 		{
 			widget = wibox.container.margin,
 			left = dpi(7), right = dpi(5),

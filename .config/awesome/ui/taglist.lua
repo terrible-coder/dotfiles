@@ -36,7 +36,7 @@ return function(s)
 			forced_width = dpi(21),
 			{
 				widget = wibox.container.background, id = "background_role",
-				fg = beautiful.colors.surface,
+				fg = beautiful.taglist_fg,
 				shape = beautiful.shapes.rounded_small,
 				{
 					widget = wibox.widget.textbox, id = "index_role",

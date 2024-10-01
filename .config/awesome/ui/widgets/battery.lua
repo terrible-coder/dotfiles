@@ -32,7 +32,7 @@ local bar_wgt = wibox.widget({
 	{
 		widget = wibox.container.background,
 		shape = beautiful.shapes.partial_rounded_left,
-		fg = beautiful.colors.text, bg = beautiful.colors.pine,
+		bg = beautiful.bg_focus,
 		{
 			widget = wibox.container.margin,
 			left = dpi(4), right = dpi(3), top = dpi(2), bottom = dpi(2),
@@ -41,10 +41,10 @@ local bar_wgt = wibox.widget({
 	},
 	{
 		widget = wibox.container.background,
-		bg = beautiful.colors.hl_low,
+		bg = beautiful.widget_active_fg,
 		shape = beautiful.shapes.partial_rounded_right,
 		shape_border_width = dpi(1),
-		shape_border_color = beautiful.colors.pine,
+		shape_border_color = beautiful.bg_focus,
 		{
 			widget = wibox.container.margin,
 			left = dpi(7), right = dpi(5),
@@ -60,7 +60,7 @@ local popup_health = wibox.widget.textbox("00")
 local battery_popup = awful.popup({
 	widget = {
 		widget = wibox.container.background,
-		bg = beautiful.colors.overlay,
+		bg = beautiful.popup_bg,
 		{
 			widget = wibox.container.margin,
 			margins = 10,
@@ -76,8 +76,8 @@ local battery_popup = awful.popup({
 		}
 	},
 	shape = beautiful.shapes.rounded_large,
-	border_width = dpi(2),
-	border_color = beautiful.colors.iris,
+	border_width = beautiful.popup_border_width,
+	border_color = beautiful.popup_border_color,
 	placement = { },
 	ontop = true,
 	visible = false

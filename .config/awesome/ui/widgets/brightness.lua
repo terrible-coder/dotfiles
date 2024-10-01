@@ -17,7 +17,7 @@ local bar_wgt = wibox.widget({
 	{
 		widget = wibox.container.background,
 		shape = beautiful.shapes.partial_rounded_left,
-		fg = beautiful.colors.hl_low, bg = beautiful.colors.foam,
+		fg = beautiful.widget_active_fg, bg = beautiful.widget_active_bg,
 		{
 			widget = wibox.container.margin,
 			left = dpi(4), right = dpi(3), top = dpi(2), bottom = dpi(2),
@@ -26,10 +26,9 @@ local bar_wgt = wibox.widget({
 	},
 	{
 		widget = wibox.container.background,
-		bg = beautiful.colors.hl_low,
 		shape = beautiful.shapes.partial_rounded_right,
 		shape_border_width = dpi(1),
-		shape_border_color = beautiful.colors.foam,
+		shape_border_color = beautiful.widget_active_bg,
 		{
 			widget = wibox.container.margin,
 			left = dpi(7), right = dpi(5),
@@ -45,7 +44,6 @@ local slider = wibox.widget({
 	handle_shape = beautiful.shapes.rounded_small,
 	handle_width = dpi(10),
 	handle_margins = { top = dpi(2), bottom = dpi(2) },
-	handle_color = beautiful.colors.iris,
 	minimum = 0, maximum = 100,
 	forced_width = dpi(120), forced_height = dpi(15),
 	value = 0,
@@ -72,7 +70,7 @@ end)
 local brightness_popup = awful.popup({
 	widget = {
 		widget = wibox.container.background,
-		bg = beautiful.colors.overlay,
+		bg = beautiful.popup_bg,
 		{
 			widget = wibox.container.margin,
 			top = 10, bottom = 10, left = 15, right = 15,
@@ -93,8 +91,8 @@ local brightness_popup = awful.popup({
 		}
 	},
 	shape = beautiful.shapes.rounded_large,
-	border_width = dpi(2),
-	border_color = beautiful.colors.iris,
+	border_width = beautiful.popup_border_width,
+	border_color = beautiful.popup_border_color,
 	placement = { },
 	ontop = true,
 	visible = false,

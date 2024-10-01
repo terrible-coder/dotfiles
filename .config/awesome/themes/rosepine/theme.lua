@@ -50,7 +50,7 @@ theme.fg_minimize   = "#ffffff"
 
 theme.useless_gap   = dpi(5)
 theme.border_width  = dpi(2)
-theme.border_normal = theme.colors.base.."00"
+theme.border_normal = theme.colors.hl_high
 theme.border_focus  = theme.colors.gold
 theme.border_marked = theme.colors.pine
 
@@ -76,6 +76,35 @@ theme.hotkeys_shape = theme.shapes.rounded_large
 theme.hotkeys_border_width = dpi(2)
 theme.hotkeys_border_color = theme.colors.pine
 theme.hotkeys_modifiers_fg = theme.colors.gold
+
+theme.toggle_active_bg = theme.colors.love
+theme.toggle_inactive_bg = theme.colors.pine
+
+theme.toggle_active_fg = theme.colors.surface
+theme.toggle_inactive_fg = theme.colors.surface
+
+theme.slider_bar_color = theme.colors.pine
+theme.slider_handle_color = theme.colors.pine
+
+theme.widget_active_bg = theme.colors.foam
+theme.widget_inactive_bg = theme.colors.surface
+
+theme.widget_active_fg = theme.colors.surface
+theme.widget_inactive_fg = theme.colors.foam
+
+theme.popup_bg = theme.colors.overlay
+theme.popup_border_width = dpi(2)
+theme.popup_border_color = theme.colors.iris
+
+theme.label_disabled_fg = theme.colors.muted
+theme.label_enabled_fg = theme.colors.text
+
+theme.list_normal_bg = nil
+theme.list_active_bg = theme.colors.iris
+
+theme.list_normal_fg = theme.fg_normal
+theme.list_active_fg = theme.colors.surface
+theme.list_disabled_fg = theme.colors.muted
 
 -- There are other variable sets
 -- overriding the default one when
