@@ -13,7 +13,20 @@ equalPad() {
 }
 
 # primary 16 colours
-for C in $(seq 0 15); do
+# first 8
+for C in $(seq 0 7); do
+	if [ `echo "$C % 8" | bc` -eq 0 ]; then
+		echo -n "  "
+	fi
+	tput setab $C
+	tput setaf 16
+	equalPad $C
+	tput sgr0
+	echo -n " "
+done
+echo
+# last 8
+for C in $(seq 8 15); do
 	if [ `echo "$C % 8" | bc` -eq 0 ]; then
 		echo -n "  "
 	fi
