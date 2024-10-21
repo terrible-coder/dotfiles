@@ -3,7 +3,7 @@ local Capi = {
 }
 local awful = require("awful")
 local gtable = require("gears.table")
-local gshape = require("gears.shape")
+local beautiful = require("beautiful")
 local wibox = require("wibox")
 
 local tasklist_buttons = gtable.join(
@@ -26,7 +26,7 @@ return function(s)
 			layout = wibox.layout.flex.horizontal,
 			spacing = 5
 		},
-		style = { shape = function(cr, w, h) gshape.rounded_rect(cr, w, h, 2) end },
+		style = { shape = beautiful.shapes.rounded_small },
 		widget_template = {
 			widget = wibox.container.background,
 			id = "background_role",

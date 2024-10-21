@@ -5,7 +5,6 @@ local awful = require("awful")
 local beautiful = require("beautiful")
 local dpi = beautiful.xresources.apply_dpi
 local wibox = require("wibox")
-local gshape = require("gears.shape")
 local gmath = require("gears.math")
 local naughty = require("naughty")
 
@@ -42,15 +41,6 @@ local icons = {
 	}
 }
 
-local partial = {
-	left = function(cr, w, h)
-		gshape.partially_rounded_rect(cr, w, h, true, false, false, true, dpi(2))
-	end,
-	right = function(cr, w, h)
-		gshape.partially_rounded_rect(cr, w, h, false, true, true, false, dpi(2))
-	end
-}
-
 ------ Device state and Access Point strength ------
 
 local wgt_icon = wibox.widget.textbox(icons.unavailable)
@@ -58,9 +48,9 @@ wgt_icon.font = beautiful.fonts.nerd..16
 
 local bar_widget = wibox.widget({
 	widget = wibox.container.background,
-	shape = function(cr, w, h) gshape.rounded_rect(cr, w, h, dpi(2)) end,
+	shape = beautiful.shapes.rounded_small,
 	shape_border_width = dpi(1),
-	shape_border_color = beautiful.colors.foam,
+	shape_border_color = beautiful.widget_active_bg,
 	{
 		widget = wibox.container.margin,
 		left = dpi(4), right = dpi(4), top = dpi(2), bottom = dpi(2),
@@ -71,25 +61,25 @@ local bar_widget = wibox.widget({
 local function state_updated(new, _, _)
 	if new == net_enums.DeviceState.UNKNOWN then
 		wgt_icon.text = icons.unknown
-		bar_widget.bg = beautiful.colors.hl_low
-		bar_widget.fg = beautiful.colors.foam
+		bar_widget.bg = beautiful.widget_inactive_bg
+		bar_widget.fg = beautiful.widget_inactive_fg
 	elseif new == net_enums.DeviceState.UNAVAILABLE then
 		wgt_icon.text = icons.unavailable
-		bar_widget.bg = beautiful.colors.hl_low
-		bar_widget.fg = beautiful.colors.foam
+		bar_widget.bg = beautiful.widget_inactive_bg
+		bar_widget.fg = beautiful.widget_inactive_fg
 	elseif new == net_enums.DeviceState.DISCONNECTED then
 		wgt_icon.text = icons.disconnected
-		bar_widget.bg = beautiful.colors.hl_low
-		bar_widget.fg = beautiful.colors.foam
+		bar_widget.bg = beautiful.widget_inactive_bg
+		bar_widget.fg = beautiful.widget_inactive_fg
 	elseif new >= net_enums.DeviceState.PREPARE and
 		     new <= net_enums.DeviceState.SECONDARIES then
 		wgt_icon.text = icons.connecting
-		bar_widget.bg = beautiful.colors.foam
-		bar_widget.fg = beautiful.colors.hl_low
+		bar_widget.bg = beautiful.widget_active_bg
+		bar_widget.fg = beautiful.widget_active_fg
 	elseif new == net_enums.DeviceState.ACTIVATED then
 		wgt_icon.text = icons.activated[1]
-		bar_widget.bg = beautiful.colors.foam
-		bar_widget.fg = beautiful.colors.hl_low
+		bar_widget.bg = beautiful.widget_active_bg
+		bar_widget.fg = beautiful.widget_active_fg
 	end
 end
 state_updated(wl_device.State)
@@ -143,10 +133,10 @@ wl_wireless.on.PropertiesChanged(function(changed)
 end)
 
 ------ WiFi device power ------
+
 local radio_status = wibox.widget({
 	widget = wibox.container.background,
-	bg = beautiful.colors.iris, fg = beautiful.colors.hl_low,
-	shape = function(cr, w, h) gshape.rounded_rect(cr, w, h, 2) end,
+	shape = beautiful.shapes.rounded_small,
 	{
 		widget = wibox.container.margin,
 		left = dpi(5), right = dpi(5), top = dpi(2), bottom = dpi(2),
@@ -157,16 +147,23 @@ local radio_status = wibox.widget({
 		}
 	},
 	set_radio = function(self, radio)
-		self.bg = radio and beautiful.colors.love or beautiful.colors.pine
+		if radio then
+			self.fg = beautiful.toggle_active_fg
+			self.bg = beautiful.toggle_active_bg
+		else
+			self.fg = beautiful.toggle_inactive_fg
+			self.bg = beautiful.toggle_inactive_bg
+		end
 	end
 })
+radio_status.radio = wifi.server.WirelessEnabled
 
 ------ Connections ------
 
 local conn_label = wibox.widget({
 	widget = wibox.container.background,
-	bg = beautiful.colors.iris, fg = beautiful.colors.hl_low,
-	shape = partial.left,
+	bg = beautiful.list_active_bg, fg = beautiful.list_active_fg,
+	shape = beautiful.shapes.partial_rounded_left,
 	{
 		widget = wibox.container.margin,
 		left = dpi(5), right = dpi(5), top = dpi(2), bottom = dpi(2),
@@ -185,8 +182,8 @@ local conn_label = wibox.widget({
 
 local conn_expand = wibox.widget({
 	widget = wibox.container.background,
-	bg = beautiful.colors.iris, fg = beautiful.colors.hl_low,
-	shape = partial.right,
+	bg = beautiful.list_active_bg, fg = beautiful.list_active_fg,
+	shape = beautiful.shapes.partial_rounded_right,
 	{
 		widget = wibox.container.margin,
 		margins = dpi(2),
@@ -248,7 +245,7 @@ for _, info in pairs(wifi.known_connections) do
 		}
 	})
 	if not info.available then
-		item.fg = beautiful.colors.muted
+		item.fg = beautiful.list_disabled_fg
 	end
 	item:buttons(
 		awful.button({ }, 1, function()
@@ -281,9 +278,9 @@ wl_device.on.PropertiesChanged(function(changed)
 		update_available_connections(changed.AvailableConnections)
 		for i, info in ipairs(wifi.known_connections) do
 			if info.available then
-				conn_list.children[i].fg = nil
+				conn_list.children[i].fg = beautiful.list_normal_fg
 			else
-				conn_list.children[i].fg = beautiful.colors.muted
+				conn_list.children[i].fg = beautiful.list_disabled_fg
 			end
 		end
 	end
@@ -298,9 +295,9 @@ local known_conn = awful.popup({
 			conn_list
 		},
 	},
-	shape = function(cr, w, h) gshape.rounded_rect(cr, w, h, 5) end,
-	border_width = dpi(2),
-	border_color = beautiful.colors.iris,
+	shape = beautiful.shapes.rounded_large,
+	border_width = beautiful.popup_border_width,
+	border_color = beautiful.popup_border_color,
 	placement = { },
 	ontop = true,
 	visible = false,
@@ -370,7 +367,7 @@ end)
 local wifi_popup = awful.popup({
 	widget = {
 		widget = wibox.container.background,
-		bg = beautiful.colors.overlay,
+		bg = beautiful.popup_bg,
 		{
 			widget = wibox.container.margin,
 			margins = dpi(10),
@@ -415,9 +412,9 @@ local wifi_popup = awful.popup({
 			}
 		}
 	},
-	shape = function(cr, w, h) gshape.rounded_rect(cr, w, h, 5) end,
-	border_width = dpi(2),
-	border_color = beautiful.colors.iris,
+	shape = beautiful.shapes.rounded_large,
+	border_width = beautiful.popup_border_width,
+	border_color = beautiful.popup_border_color,
 	placement = { },
 	ontop = true,
 	visible = false,

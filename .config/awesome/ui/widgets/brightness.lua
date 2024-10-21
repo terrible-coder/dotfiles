@@ -4,7 +4,6 @@ local Capi = {
 local awful = require("awful")
 local beautiful = require("beautiful")
 local dpi = beautiful.xresources.apply_dpi
-local gshape = require("gears.shape")
 local wibox = require("wibox")
 
 local server = require("sys.backlight")
@@ -17,10 +16,8 @@ local bar_wgt = wibox.widget({
 	layout = wibox.layout.fixed.horizontal,
 	{
 		widget = wibox.container.background,
-		shape = function(cr, w, h)
-			gshape.partially_rounded_rect(cr, w, h, true, false, false, true, dpi(2))
-		end,
-		fg = beautiful.colors.hl_low, bg = beautiful.colors.foam,
+		shape = beautiful.shapes.partial_rounded_left,
+		fg = beautiful.widget_active_fg, bg = beautiful.widget_active_bg,
 		{
 			widget = wibox.container.margin,
 			left = dpi(4), right = dpi(3), top = dpi(2), bottom = dpi(2),
@@ -29,12 +26,9 @@ local bar_wgt = wibox.widget({
 	},
 	{
 		widget = wibox.container.background,
-		bg = beautiful.colors.hl_low,
-		shape = function(cr, w, h)
-			gshape.partially_rounded_rect(cr, w, h, false, true, true, false, dpi(2))
-		end,
+		shape = beautiful.shapes.partial_rounded_right,
 		shape_border_width = dpi(1),
-		shape_border_color = beautiful.colors.foam,
+		shape_border_color = beautiful.widget_active_bg,
 		{
 			widget = wibox.container.margin,
 			left = dpi(7), right = dpi(5),
@@ -46,13 +40,12 @@ local bar_wgt = wibox.widget({
 local slider = wibox.widget({
 	widget = wibox.widget.slider,
 	bar_height = dpi(2), bar_width = dpi(30),
-	bar_shape = gshape.rounded_bar,
-	handle_shape = function(cr, _, h) gshape.rounded_rect(cr, h, h, 2) end,
-	handle_width = dpi(5),
-	handle_margins = { top = dpi(2), bottom = dpi(2), left = dpi(2), right = dpi(2) },
-	handle_color = beautiful.colors.iris,
+	bar_shape = beautiful.shapes.bar,
+	handle_shape = beautiful.shapes.rounded_small,
+	handle_width = dpi(10),
+	handle_margins = { top = dpi(2), bottom = dpi(2) },
 	minimum = 0, maximum = 100,
-	forced_width = dpi(120), forced_height = dpi(5),
+	forced_width = dpi(120), forced_height = dpi(15),
 	value = 0,
 })
 
@@ -77,7 +70,7 @@ end)
 local brightness_popup = awful.popup({
 	widget = {
 		widget = wibox.container.background,
-		bg = beautiful.colors.overlay,
+		bg = beautiful.popup_bg,
 		{
 			widget = wibox.container.margin,
 			top = 10, bottom = 10, left = 15, right = 15,
@@ -97,9 +90,9 @@ local brightness_popup = awful.popup({
 			}
 		}
 	},
-	shape = function(cr, w, h) gshape.rounded_rect(cr, w, h, 5) end,
-	border_width = dpi(2),
-	border_color = beautiful.colors.iris,
+	shape = beautiful.shapes.rounded_large,
+	border_width = beautiful.popup_border_width,
+	border_color = beautiful.popup_border_color,
 	placement = { },
 	ontop = true,
 	visible = false,

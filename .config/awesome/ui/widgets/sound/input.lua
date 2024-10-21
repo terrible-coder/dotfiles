@@ -4,7 +4,6 @@ local Capi = {
 local awful = require("awful")
 local beautiful = require("beautiful")
 local dpi = beautiful.xresources.apply_dpi
-local gshape = require("gears.shape")
 local wibox = require("wibox")
 local naughty = require("naughty")
 
@@ -48,10 +47,8 @@ local source_widget = wibox.widget({
 	layout = wibox.layout.fixed.horizontal,
 	{
 		widget = wibox.container.background,
-		shape = function(cr, w, h)
-			gshape.partially_rounded_rect(cr, w, h, true, false, false, true, dpi(2))
-		end,
-		fg = beautiful.colors.hl_low, bg = beautiful.colors.foam,
+		shape = beautiful.shapes.partial_rounded_left,
+		fg = beautiful.widget_active_fg, bg = beautiful.widget_active_bg,
 		{
 			widget = wibox.container.margin,
 			left = dpi(4), right = dpi(3), top = dpi(2), bottom = dpi(2),
@@ -60,13 +57,9 @@ local source_widget = wibox.widget({
 	},
 	{
 		widget = wibox.container.background,
-		bg = beautiful.colors.hl_low,
-		fg = source_device.Mute and beautiful.colors.muted or nil,
-		shape = function(cr, w, h)
-			gshape.partially_rounded_rect(cr, w, h, false, true, true, false, dpi(2))
-		end,
+		shape = beautiful.shapes.partial_rounded_right,
 		shape_border_width = dpi(1),
-		shape_border_color = beautiful.colors.foam,
+		shape_border_color = beautiful.widget_active_bg,
 		{
 			widget = wibox.container.margin,
 			left = dpi(7), right = dpi(5),
@@ -74,13 +67,17 @@ local source_widget = wibox.widget({
 		}
 	}
 })
+if source_device.Mute then
+	source_widget.children[2].fg = beautiful.label_disabled_fg
+else
+	source_widget.children[2].fg = beautiful.label_enabled_fg
+end
 
 local slider = wibox.widget({
 	widget = wibox.widget.slider,
 	bar_height = dpi(2),
-	bar_shape = gshape.rounded_bar,
-	bar_color = beautiful.colors.pine,
-	handle_shape = function(cr, w, h) gshape.rounded_rect(cr, w, h, 2) end,
+	bar_shape = beautiful.shapes.bar,
+	handle_shape = beautiful.shapes.rounded_small,
 	handle_width = dpi(10),
 	handle_margins = { top = 2, bottom = 2 },
 	minimum = 0, maximum = 100,
@@ -125,7 +122,7 @@ for i, path in ipairs(source_device.Ports) do
 	)
 	local item = wibox.widget({
 		widget = wibox.container.background,
-		shape = function(cr, w, h) gshape.rounded_rect(cr, w, h, 2) end,
+		shape = beautiful.shapes.rounded_small,
 		{
 			widget = wibox.container.margin,
 			left = dpi(5), right = dpi(5), top = dpi(2), bottom = dpi(2),
@@ -137,8 +134,8 @@ for i, path in ipairs(source_device.Ports) do
 	})
 	if path == _active_port then
 		_active_port_idx = i
-		item.bg = beautiful.colors.iris
-		item.fg = beautiful.colors.hl_low
+		item.bg = beautiful.list_active_bg
+		item.fg = beautiful.list_active_fg
 	end
 	item:buttons(
 		awful.button({ }, 1, function()
@@ -152,9 +149,9 @@ for i, path in ipairs(source_device.Ports) do
 	)
 	p.on.AvailableChanged(function(available)
 		if available == 1 then
-			item.fg = beautiful.colors.muted
+			item.fg = beautiful.list_disabled_fg
 		else
-			item.fg = nil
+			item.fg = beautiful.list_normal_fg
 		end
 	end)
 	ports_layout:add(item)
@@ -163,7 +160,7 @@ end
 local source_popup = awful.popup({
 	widget = {
 		widget = wibox.container.background,
-		bg = beautiful.colors.overlay,
+		bg = beautiful.popup_bg,
 		{
 			widget = wibox.container.margin,
 			margins = dpi(10),
@@ -202,9 +199,9 @@ local source_popup = awful.popup({
 			},
 		}
 	},
-	shape = function(cr, w, h) gshape.rounded_rect(cr, w, h, 5) end,
-	border_width = dpi(2),
-	border_color = beautiful.colors.iris,
+	shape = beautiful.shapes.rounded_large,
+	border_width = beautiful.popup_border_width,
+	border_color = beautiful.popup_border_color,
 	placement = { },
 	ontop = true,
 	visible = false,
@@ -240,9 +237,9 @@ source_device.on.VolumeUpdated(function(volume)
 end)
 source_device.on.MuteUpdated(function(mute)
 	if mute then
-		source_widget.children[2].fg = beautiful.colors.muted
+		source_widget.children[2].fg = beautiful.list_disabled_fg
 	else
-		source_widget.children[2].fg = nil
+		source_widget.children[2].fg = beautiful.list_normal_fg
 	end
 end)
 source_device.on.ActivePortUpdated(function(active_port_path)
@@ -256,8 +253,8 @@ source_device.on.ActivePortUpdated(function(active_port_path)
 			break
 		end
 	end
-	ports_layout.children[_active_port_idx].bg = beautiful.colors.iris
-	ports_layout.children[_active_port_idx].fg = beautiful.colors.hl_low
+	ports_layout.children[_active_port_idx].bg = beautiful.list_active_bg
+	ports_layout.children[_active_port_idx].fg = beautiful.list_active_fg
 end)
 source_device.on.StateUpdated(function(state)
 	if state == 0 then

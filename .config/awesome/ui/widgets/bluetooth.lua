@@ -3,7 +3,6 @@ local Capi = {
 }
 local GLib = require("lgi").GLib
 local awful = require("awful")
-local gshape = require("gears.shape")
 local wibox = require("wibox")
 local beautiful = require("beautiful")
 local dpi = beautiful.xresources.apply_dpi
@@ -31,9 +30,9 @@ wgt_icon.font = beautiful.fonts.nerd..12
 
 local bar_widget = wibox.widget({
 	widget = wibox.container.background,
-	shape = function(cr, w, h) gshape.rounded_rect(cr, w, h, dpi(2)) end,
+	shape = beautiful.shapes.rounded_small,
 	shape_border_width = dpi(1),
-	shape_border_color = beautiful.colors.foam,
+	shape_border_color = beautiful.widget_active_bg,
 	{
 		widget = wibox.container.margin,
 		left = dpi(4), right = dpi(4), top = dpi(2), bottom = dpi(2),
@@ -43,8 +42,7 @@ local bar_widget = wibox.widget({
 
 local power_status = wibox.widget({
 	widget = wibox.container.background,
-	bg = beautiful.colors.iris, fg = beautiful.colors.hl_low,
-	shape = function(cr, w, h) gshape.rounded_rect(cr, w, h, 2) end,
+	shape = beautiful.shapes.rounded_small,
 	{
 		widget = wibox.container.margin,
 		left = dpi(5), right = dpi(5), top = dpi(2), bottom = dpi(2),
@@ -55,9 +53,17 @@ local power_status = wibox.widget({
 		}
 	},
 	set_power = function(self, powered)
-		self.bg = powered and beautiful.colors.love or beautiful.colors.pine
+		if powered then
+			self.fg = beautiful.toggle_active_fg
+			self.bg = beautiful.toggle_active_bg
+		else
+			self.fg = beautiful.toggle_inactive_fg
+			self.bg = beautiful.toggle_inactive_bg
+		end
 	end
 })
+power_status.power = bl_adapter.Powered
+
 power_status:buttons(
 	awful.button({ }, 1, function()
 		bl_props:GetAsync(
@@ -100,13 +106,13 @@ discoverable_status:buttons(
 local powered = bl_adapter.Powered
 power_status.power = powered
 if powered then
-	bar_widget.bg = beautiful.colors.foam
-	bar_widget.fg = beautiful.colors.hl_low
-	discoverable_status.fg = nil
+	bar_widget.bg = beautiful.widget_active_bg
+	bar_widget.fg = beautiful.widget_active_fg
+	discoverable_status.fg = beautiful.list_normal_fg
 else
-	bar_widget.bg = beautiful.colors.hl_low
-	bar_widget.fg = beautiful.colors.foam
-	discoverable_status.fg = beautiful.colors.muted
+	bar_widget.bg = beautiful.widget_inactive_bg
+	bar_widget.fg = beautiful.widget_inactive_fg
+	discoverable_status.fg = beautiful.list_disabled_fg
 end
 local discoverable = bl_adapter.Discoverable
 discoverable_status.text = discoverable and "yes" or "no"
@@ -114,7 +120,7 @@ discoverable_status.text = discoverable and "yes" or "no"
 local blue_popup = awful.popup({
 	widget = {
 		widget = wibox.container.background,
-		bg = beautiful.colors.overlay,
+		bg = beautiful.popup_bg,
 		{
 			widget = wibox.container.margin,
 			margins = dpi(10),
@@ -140,9 +146,9 @@ local blue_popup = awful.popup({
 			}
 		}
 	},
-	shape = function(cr, w, h) gshape.rounded_rect(cr, w, h, 5) end,
-	border_width = dpi(2),
-	border_color = beautiful.colors.iris,
+	shape = beautiful.shapes.rounded_large,
+	border_width = beautiful.popup_border_width,
+	border_color = beautiful.popup_border_color,
 	placement = { },
 	ontop = true,
 	visible = false,
@@ -181,14 +187,14 @@ bl_adapter.on.PropertiesChanged(function(changed)
 		})
 		if changed.Powered then
 			wgt_icon.text = icons.ON
-			bar_widget.bg = beautiful.colors.foam
-			bar_widget.fg = beautiful.colors.hl_low
-			discoverable_status.fg = nil
+			bar_widget.bg = beautiful.widget_active_bg
+			bar_widget.fg = beautiful.widget_active_fg
+			discoverable_status.fg = beautiful.list_normal_fg
 		else
 			wgt_icon.text = icons.OFF
-			bar_widget.bg = beautiful.colors.hl_low
-			bar_widget.fg = beautiful.colors.foam
-			discoverable_status.fg = beautiful.colors.muted
+			bar_widget.bg = beautiful.widget_inactive_bg
+			bar_widget.fg = beautiful.widget_inactive_fg
+			discoverable_status.fg = beautiful.list_disabled_fg
 		end
 		power_status.power = changed.Powered
 	end

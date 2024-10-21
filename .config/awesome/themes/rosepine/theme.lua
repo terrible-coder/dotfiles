@@ -21,6 +21,22 @@ theme.fonts = {
 theme.font = theme.fonts.sans..10
 
 theme.colors = require("themes.rosepine.colors").rosepine.main
+theme.shapes = {
+	rounded_small = function(cr, w, h)
+		gshape.rounded_rect(cr, w, h, dpi(2))
+	end,
+	rounded_large = function(cr, w, h)
+		gshape.rounded_rect(cr, w, h, dpi(5))
+	end,
+	partial_rounded_left = function(cr, w, h)
+		gshape.partially_rounded_rect(cr, w, h, true, false, false, true, dpi(2))
+	end,
+	partial_rounded_right = function(cr, w, h)
+		gshape.partially_rounded_rect(cr, w, h, false, true, true, false, dpi(2))
+	end,
+	bar = gshape.rounded_bar,
+}
+
 theme.bg_normal     = theme.colors.base
 theme.bg_focus      = theme.colors.pine
 theme.bg_urgent     = theme.colors.love
@@ -34,7 +50,7 @@ theme.fg_minimize   = "#ffffff"
 
 theme.useless_gap   = dpi(5)
 theme.border_width  = dpi(2)
-theme.border_normal = theme.colors.base.."00"
+theme.border_normal = theme.colors.hl_high
 theme.border_focus  = theme.colors.gold
 theme.border_marked = theme.colors.pine
 
@@ -52,32 +68,62 @@ theme.taglist_fg_focus    = theme.colors.surface
 
 theme.tooltip_bg = theme.colors.overlay
 theme.tooltip_fg = theme.colors.text
-theme.tooltip_shape = function(cr, w, h) gshape.rounded_rect(cr, w, h, 2) end
+theme.tooltip_shape = theme.shapes.rounded_small
 theme.tooltip_border_width = dpi(2)
 theme.tooltip_border_color = theme.colors.iris
+
+theme.hotkeys_shape = theme.shapes.rounded_large
+theme.hotkeys_border_width = dpi(2)
+theme.hotkeys_border_color = theme.colors.pine
+theme.hotkeys_modifiers_fg = theme.colors.gold
+
+theme.toggle_active_bg = theme.colors.love
+theme.toggle_inactive_bg = theme.colors.pine
+
+theme.toggle_active_fg = theme.colors.surface
+theme.toggle_inactive_fg = theme.colors.surface
+
+theme.slider_bar_color = theme.colors.pine
+theme.slider_handle_color = theme.colors.pine
+
+theme.widget_active_bg = theme.colors.foam
+theme.widget_inactive_bg = theme.colors.surface
+
+theme.widget_active_fg = theme.colors.surface
+theme.widget_inactive_fg = theme.colors.foam
+
+theme.popup_bg = theme.colors.overlay
+theme.popup_border_width = dpi(2)
+theme.popup_border_color = theme.colors.iris
+
+theme.label_disabled_fg = theme.colors.muted
+theme.label_enabled_fg = theme.colors.text
+
+theme.list_normal_bg = nil
+theme.list_active_bg = theme.colors.iris
+
+theme.list_normal_fg = theme.fg_normal
+theme.list_active_fg = theme.colors.surface
+theme.list_disabled_fg = theme.colors.muted
 
 -- There are other variable sets
 -- overriding the default one when
 -- defined, the sets are:
 -- taglist_[bg|fg]_[focus|urgent|occupied|empty|volatile]
 -- tasklist_[bg|fg]_[focus|urgent]
--- titlebar_[bg|fg]_[normal|focus]
 -- tooltip_[font|opacity|fg_color|bg_color|border_width|border_color]
 -- mouse_finder_[color|timeout|animate_timeout|radius|factor]
 -- prompt_[fg|bg|fg_cursor|bg_cursor|font]
 -- hotkeys_[bg|fg|border_width|border_color|shape|opacity|modifiers_fg|label_bg|label_fg|group_margin|font|description_font]
--- Example:
---theme.taglist_bg_focus = "#ff0000"
 
 -- Variables set for theming notifications:
 -- notification_font
--- notification_[bg|fg]
--- notification_[width|height|margin]
--- notification_[border_color|border_width|shape|opacity]
+theme.notification_bg = theme.colors.overlay
+theme.notification_shape = theme.shapes.rounded_large
+theme.notification_border_width = dpi(2)
+theme.notification_border_color = theme.colors.iris
 
 -- Variables set for theming the menu:
--- menu_[bg|fg]_[normal|focus]
--- menu_[border_color|border_width]
 theme.menu_submenu_icon = themes_path.."rosepine/submenu.png"
 theme.menu_height = dpi(25)
 theme.menu_width  = dpi(150)
