@@ -18,9 +18,11 @@ vim.keymap.set("n", "G", "Gzz")
 ---- Obsidian ----
 ------------------
 vim.keymap.set("n", "<leader>od", ":ObsidianToday ")
-vim.keymap.set("n", "<leader>ot", ":ObsidianTags<CR>")
+vim.keymap.set("n", "<leader>ob", ":ObsidianBacklinks<CR>")
+vim.keymap.set("n", "<leader>os", ":ObsidianSearch ")
+vim.keymap.set("n", "<leader>ot", ":ObsidianTags ")
 vim.keymap.set("n", "<leader>oz", ":ObsidianNew<CR>")
-vim.keymap.set("n", "<leader>tw", ":set textwidth=")
+vim.keymap.set("n", "<leader>tw", ":set textwidth=80")
 vim.keymap.set("i", "<C-d>", "<ESC>!!tod<CR>o")
 
 -------------------
