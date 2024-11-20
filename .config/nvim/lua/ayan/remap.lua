@@ -28,13 +28,9 @@ vim.keymap.set("i", "<C-d>", "<ESC>!!tod<CR>o")
 -------------------
 ---- Telescope ----
 -------------------
--- I have no idea why the following kepmaps won't work when set in the Telescope
--- config file in /after/plugin/telescope.lua
-local builtin = require("telescope.builtin")
-vim.keymap.set("n", "<leader>ff", builtin.find_files, {})
-vim.keymap.set("n", "<leader>gg", function()
-  builtin.grep_string({ search = vim.fn.input("Grep > ") })
-end)
+vim.keymap.set("n", "<leader>ff", ":Telescope find_files<CR>")
+vim.keymap.set("n", "<leader>fw", ":Telescope grep_string<CR>")
+vim.keymap.set("n", "<leader>fg", ":Telescope live_grep<CR>")
 
 --------------------------
 ---- Split navigation ----
