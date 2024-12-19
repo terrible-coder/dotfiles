@@ -54,20 +54,31 @@ return require("lazy").setup({
 	-- treesitter
 	{
 		"nvim-treesitter/nvim-treesitter",
-		version = false,
+		version = "*",
 		build = ":TSUpdate",
-		cmd = { "TSUpdateSync", "TSUpdate", "TSInstall" },
-		opts = {
-			ensure_installed = { "bash", "c", "lua", "vim", },
-			sync_install = false,
-			auto_install = true,
-
-			highlight = {
-				enable = true,
-				-- disable = { "markdown" },
-				additional_vim_regex_highlighting = false,
-			},
-		}
+		config = function()
+			local configs = require("nvim-treesitter.configs")
+			configs.setup({
+				ensure_installed = { "bash", "c", "lua", "vim", },
+				sync_install = false,
+				auto_install = true,
+				highlight = {
+					enable = true,
+					disable = function(lang, buf)
+						if lang == "markdown" then
+							return true
+						end
+						local MAX_SIZE = 200 * 1024; -- 200kB
+						local ok, stats = pcall(vim.loop.fs_stat, vim.api.nvim_buf_get_name(buf))
+						if ok and stats and stats.size > MAX_SIZE then
+							return true
+						end
+						return false
+					end,
+					additional_vim_regex_highlighting = false,
+				},
+			})
+		end,
 	},
 
 	-- LSP
