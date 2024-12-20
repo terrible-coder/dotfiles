@@ -95,7 +95,36 @@ return require("lazy").setup({
 			"hrsh7th/nvim-cmp",
 			"hrsh7th/cmp-nvim-lsp",
 			"L3MON4D3/LuaSnip",
-		}
+		},
+		config = function()
+			local lsp = require("lsp-zero")
+			local lspconfig = require("lspconfig")
+
+			require("mason").setup({
+				ui = {
+					icons = {
+						package_installed   = "",
+						package_pending     = "",
+						package_uninstalled = "",
+					},
+				},
+				pip = {
+					upgrade_pip = true,
+				}
+			})
+			require("mason-lspconfig").setup({
+				ensure_installed = { "lua_ls", "clangd", },
+				handlers = {
+					lsp.default_setup,
+					lua_ls = function()
+						lspconfig.lua_ls.setup(lsp.nvim_lua_ls())
+					end,
+					clangd = function()
+						lspconfig.clangd.setup({ })
+					end,
+				}
+			})
+		end,
 	},
 
 	-- Markdown sweetness
