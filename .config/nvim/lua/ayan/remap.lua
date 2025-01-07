@@ -23,7 +23,6 @@ vim.keymap.set("n", "<leader>os", ":ObsidianSearch ")
 vim.keymap.set("n", "<leader>ot", ":ObsidianTags ")
 vim.keymap.set("n", "<leader>oz", ":ObsidianNew<CR>")
 vim.keymap.set("n", "<leader>tw", ":set textwidth=80")
-vim.keymap.set("i", "<C-d>", "<ESC>!!tod<CR>o")
 
 -------------------
 ---- Telescope ----
@@ -31,6 +30,8 @@ vim.keymap.set("i", "<C-d>", "<ESC>!!tod<CR>o")
 vim.keymap.set("n", "<leader>ff", ":Telescope find_files<CR>")
 vim.keymap.set("n", "<leader>fw", ":Telescope grep_string<CR>")
 vim.keymap.set("n", "<leader>fg", ":Telescope live_grep<CR>")
+vim.keymap.set("n", "<leader>fh", ":Telescope help_tags<CR>")
+vim.keymap.set("n", "<leader>fr", ":Telescope lsp_references<CR>")
 
 --------------------------
 ---- Split navigation ----
@@ -47,3 +48,12 @@ vim.keymap.set("n", "<C-j>", "<C-w>j") -- shift focus to buffer on below
 vim.keymap.set("n", "<C-k>", "<C-w>k") -- shift focus to buffer on above
 vim.keymap.set("n", "<C-l>", "<C-w>l") -- shift focus to buffer on left
 vim.keymap.set("n", "<C-c>", "<C-w>c") -- close current buffer
+
+vim.keymap.set(
+	{ "i", "s" }, "<C-l>",
+	function() require("luasnip").jump( 1) end
+)
+vim.keymap.set(
+	{ "i", "s" }, "<C-h>",
+	function() require("luasnip").jump(-1) end
+)
