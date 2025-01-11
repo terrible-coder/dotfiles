@@ -39,6 +39,22 @@ vim.opt.smartindent = true
 vim.opt.nu = true
 vim.opt.rnu = true
 
+vim.api.nvim_create_autocmd("TermOpen", {
+	callback = function()
+		vim.opt.nu = false
+		vim.opt.rnu = false
+	end,
+})
+
+vim.api.nvim_create_autocmd("TextYankPost", {
+	group = vim.api.nvim_create_augroup("highlight", { }),
+	desc = "Highlight when yanking",
+	pattern = "*",
+	callback = function()
+		vim.highlight.on_yank({ higroup = "IncSearch", timeout = 100 })
+	end
+})
+
 require("ayan.plugins")
 vim.cmd.colorscheme("rose-pine")
 require("ayan.remap")
