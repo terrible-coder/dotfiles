@@ -1,9 +1,20 @@
 vim.g.mapleader = " "
 
-----------------------
----- Project view ----
-----------------------
+---------------------------------
+---- Project file management ----
+---------------------------------
 vim.keymap.set("n", "<leader>pv", vim.cmd.Ex)
+vim.keymap.set("n", "<leader>pd", function()
+	vim.ui.input({
+		prompt = "Delete file? (y/n) ",
+		default = "y",
+	},
+	function(input)
+		if input and input == "y" then
+			vim.fn.delete(vim.fn.expand("%"))
+		end
+	end)
+end)
 
 --------------------------
 ---- Screen scrolling ----
@@ -17,12 +28,11 @@ vim.keymap.set("n", "G", "Gzz")
 ------------------
 ---- Obsidian ----
 ------------------
-vim.keymap.set("n", "<leader>od", ":ObsidianToday ")
-vim.keymap.set("n", "<leader>ob", ":ObsidianBacklinks<CR>")
-vim.keymap.set("n", "<leader>os", ":ObsidianSearch ")
-vim.keymap.set("n", "<leader>ot", ":ObsidianTags ")
-vim.keymap.set("n", "<leader>oz", ":ObsidianNew<CR>")
-vim.keymap.set("n", "<leader>tw", ":set textwidth=80")
+-- vim.keymap.set("n", "<leader>od", ":ObsidianToday ")
+-- vim.keymap.set("n", "<leader>ob", ":ObsidianBacklinks<CR>")
+-- vim.keymap.set("n", "<leader>os", ":ObsidianSearch ")
+-- vim.keymap.set("n", "<leader>ot", ":ObsidianTags ")
+-- vim.keymap.set("n", "<leader>oz", ":ObsidianNew<CR>")
 
 -------------------
 ---- Telescope ----
