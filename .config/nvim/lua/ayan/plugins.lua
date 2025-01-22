@@ -2,11 +2,19 @@ return require("lazy").setup({
 	-- fuzzy file finder
 	{
 		"nvim-telescope/telescope.nvim",
-		tag = "0.1.5",
+		version = "0.1.x",
 		dependencies = {
 			"nvim-lua/plenary.nvim"
 		},
 		opts = {
+			defaults = {
+				mappings = {
+					i = {
+						["<C-x>"] = false,
+						["<C-h>"] = "select_horizontal",
+					}
+				}
+			},
 			pickers = {
 				find_files = {
 					prompt_title = "Search files ("..vim.fn.getcwd()..")"
@@ -37,7 +45,7 @@ return require("lazy").setup({
 		opts = {
 			options = {
 				component_separators = "|",
-				section_separators = { left = "", right = "" },
+				section_separators = { left = "", right = "" },
 			},
 			sections = {
 				lualine_c = {
@@ -47,6 +55,7 @@ return require("lazy").setup({
 						path = 1,
 					},
 				},
+				lualine_y = { }
 			}
 		}
 	},

@@ -42,6 +42,7 @@ vim.keymap.set("n", "<leader>fw", ":Telescope grep_string<CR>")
 vim.keymap.set("n", "<leader>fg", ":Telescope live_grep<CR>")
 vim.keymap.set("n", "<leader>fh", ":Telescope help_tags<CR>")
 vim.keymap.set("n", "<leader>fr", ":Telescope lsp_references<CR>")
+vim.keymap.set("n", "<leader>fb", ":Telescope buffers<CR>")
 
 --------------------------
 ---- Split navigation ----
