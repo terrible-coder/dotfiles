@@ -132,6 +132,9 @@ return require("lazy").setup({
 					clangd = function()
 						lspconfig.clangd.setup({ })
 					end,
+					marksman = function()
+						lspconfig.marksman.setup({ })
+					end,
 				}
 			})
 		end,
