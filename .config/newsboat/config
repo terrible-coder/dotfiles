@@ -25,17 +25,17 @@ podlist-format "%4i [%6dMB/%6tMB] [%5p%%] [%12K] %-12S %b"
 download-path "~/media/%n"
 download-filename-format "%F-%t.%e"
 
-color listfocus color255 color4
-color listnormal color255 default
+color listfocus        color0 color4
 color listfocus_unread color0 color4 bold
+color listnormal        color7 default
 color listnormal_unread color1 default bold
-color info color6 color16 bold
+color info color0 color2 bold
 
 highlight feedlist "[║]" color2 default bold
 highlight feedlist "^╟.*" color2 default bold
 highlight feedlist " \[ [A-Za-z ]+ \] " color7
-highlight article "^Feed:.*" color255 default bold
-highlight article "^Author:.*" color3 color0
+highlight article "^Feed:.*" color7 default bold
+highlight article "^Author:.*" color3 default bold
 highlight article "^Title:.*" color9 default bold
 highlight article "^(Feed|Title|Author|Date|Link): " color12 default bold
 highlight article "https?://[^ ]+" color2 default underline
