@@ -2,18 +2,24 @@
 # http://feeds.aps.org/rss/recent/prb.xml "PRB"
 # http://feeds.aps.org/rss/recent/pre.xml "PRE"
 
-Comics
+Comics|Cartoons
 https://www.smbc-comics.com/comic/rss "Comics" "~Saturday Morning Breakfast Cereal"
 https://xkcd.com/rss.xml "Comics" "~xkcd"
 https://www.oglaf.com/feeds/rss/ "Comics" "~Oglaf"
 https://explosm.net/rss.xml "Comics"
+https://theoatmeal.com/feed/rss "Comics" "~The Oatmeal"
+https://www.thehindu.com/opinion/cartoon/feeder/default.rss "Cartoon" "~The Hindu | Opinion"
 
 Blogs
-https://www.vimoh.in/feed "Blog" "~Vimoh's Ideas"
-https://www.bombaydost.co.in/feeds/posts/default?alt=rss "Blog" "~Bombay Dost | LGBTQIA+ Community in India"
-https://www.cyberciti.com/faq/feed/ "Blog" "~Cyberciti"
+https://www.fathomdaily.com/feed "Blog" "~Vimoh's Ideas"
+https://www.theculturecafe.in/feed "Blog" "~Anurag Minus Verma"
 https://medium.com/feed/@burntrose "Blog" "~burntrose on Medium"
 https://craphound.com/feed "Blog" "~Cory Doctorow's craphound"
+https://www.coryd.dev/feeds/posts.xml "Blog" "~Cory Dansfeldt"
+https://vkc.sh/feed/ "Blog" "~Veronica (Explains)"
+https://www.cyberciti.com/faq/feed/ "Blog" "~Cyberciti"
+https://zettelkasten.de/feed.atom "Blog" "~zettelkasten.de"
+https://gerrymcgovern.com/feed/ "Blog" "~Gerry McGovern"
 
 YouTube
 https://www.youtube.com/feeds/videos.xml?channel_id=UCEcR-YyDkwd8agxK2Djn4RA "YouTube" "~Pranav Radhakrishnan"
@@ -27,8 +33,7 @@ https://bengali.abplive.com/news/kolkata/feed "News" "~ABP Live Kolkata"
 https://www.thehindubusinessline.com/news/national/feeder/default.rss "News" "~The Hindu businessline National"
 https://www.thehindubusinessline.com/news/science/feeder/default.rss "News" "~The Hindu businessline Science"
 https://www.newslaundry.com/stories.rss?time-period=last-7-days&exclude-section-ids=15848,15817 "News"
-https://www.thehindu.com/opinion/columns/feeder/default.rss "News" "~The Hindu | Opinion>Columns"
-https://www.thehindu.com/opinion/cartoon/feeder/default.rss "News" "~The Hindu | Opinion>Cartoon"
+https://www.thehindu.com/opinion/columns/feeder/default.rss "News" "~The Hindu | Opinion"
 
 Podcasts
 https://anchor.fm/s/a1e44e30/podcast/rss "Podcast" "~The PS: Talk show"
