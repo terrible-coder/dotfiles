@@ -10,7 +10,7 @@ bind-key a toggle-article-read
 
 auto-reload yes
 suppress-first-reload no
-reload-time 60
+reload-time 180
 reload-threads 2
 datetime-format "%d %b, %Y"
 save-path "~/.config/newsboat/Saved"
@@ -24,7 +24,7 @@ feedlist-format "%?T?║%4i %n %11u [ %T ] %t%> ║&╟────────�
 articlelist-title-format "[ %T ] (%u/%t)%?F? filter `%F'&? - %U"
 itemview-title-format "[ %F ] '%T'"
 podlist-format "%4i [%6dMB/%6tMB] [%5p%%] [%12K] %-12S %b"
-download-path "~/media/%n"
+download-path "~/media/podcasts/%n"
 download-filename-format "%F-%t.%e"
 player "mpv --force-window"
 
