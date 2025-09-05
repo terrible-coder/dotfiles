@@ -35,7 +35,10 @@ require("lazy").setup({
 		},
 		{
 			"neovim/nvim-lspconfig"
-		}
+		},
+		{
+			"tpope/vim-fugitive"
+		},
 	}
 })
 
@@ -77,8 +80,8 @@ vim.lsp.config("lua_ls", {
 				workspace = {
 					checkThirdParty = false,
 					library = {
-						vim.env.VIMRUNTIME
-						-- '${3rd}/luv/library'
+						vim.env.VIMRUNTIME,
+						'${3rd}/luv/library'
 						-- '${3rd}/busted/library'
 					}
 					}
@@ -88,8 +91,8 @@ vim.lsp.config("lua_ls", {
 				Lua = { }
 			}
 })
-vim.cmd[[set completeopt=menuone,noinsert,popup,preview]]
-
+-- vim.cmd[[set completeopt=menuone,noinsert,noselect,popup,preview]]
+vim.opt.completeopt = { "menuone", "noinsert", "noselect", "popup", "preview" }
 vim.cmd.colorscheme("rose-pine")
 
 vim.g.mapleader = " "
@@ -110,4 +113,11 @@ vim.api.nvim_create_autocmd({"TextYankPost"}, {
 	callback = function()
 		vim.highlight.on_yank({ timeout = 100 })
 	end
+})
+
+local yq = require("ayan.yq")
+
+vim.api.nvim_create_user_command("Yq", yq.searchKeyword, {
+	nargs = '*',
+	complete = "file_in_path"
 })
