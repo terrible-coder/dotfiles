@@ -1,0 +1,5 @@
+#!/usr/bin/sh
+
+duration="$1"
+
+sleep $duration && notify-send "Take a break!" "It has been $duration." -u critical &
