@@ -19,28 +19,29 @@ vim.opt.termguicolors = true
 vim.opt.winborder = "single"
 
 vim.opt.conceallevel = 0
+vim.g.markdown_fenced_languages = { "bash", "lua" }
 
-vim.opt.rtp:prepend(vim.fn.stdpath("data").."/lazy/lazy.nvim")
-require("lazy").setup({
-	spec = {
-		{
-			"dracula/vim",
-			name = "dracula",
-			lazy = true
-		},
-		{
-			"rose-pine/neovim",
-			name = "rose-pine",
-			lazy = true
-		},
-		{
-			"neovim/nvim-lspconfig"
-		},
-		{
-			"tpope/vim-fugitive"
-		},
-	}
-})
+-- vim.opt.rtp:prepend(vim.fn.stdpath("data").."/lazy/lazy.nvim")
+-- require("lazy").setup({
+-- 	spec = {
+-- 		{
+-- 			"dracula/vim",
+-- 			name = "dracula",
+-- 			lazy = true
+-- 		},
+-- 		{
+-- 			"rose-pine/neovim",
+-- 			name = "rose-pine",
+-- 			lazy = true
+-- 		},
+-- 		{
+-- 			"neovim/nvim-lspconfig"
+-- 		},
+-- 		{
+-- 			"tpope/vim-fugitive"
+-- 		},
+-- 	}
+-- })
 
 vim.lsp.enable({ "lua_ls", "clangd" })
 vim.api.nvim_create_autocmd("LspAttach", {
@@ -93,7 +94,11 @@ vim.lsp.config("lua_ls", {
 })
 -- vim.cmd[[set completeopt=menuone,noinsert,noselect,popup,preview]]
 vim.opt.completeopt = { "menuone", "noinsert", "noselect", "popup", "preview" }
+
+vim.cmd.packadd("rose-pine")
 vim.cmd.colorscheme("rose-pine")
+
+vim.cmd.packadd("gorbanyov-info")
 
 vim.g.mapleader = " "
 
@@ -117,7 +122,7 @@ vim.api.nvim_create_autocmd({"TextYankPost"}, {
 
 local yq = require("ayan.yq")
 
-vim.api.nvim_create_user_command("Yq", yq.searchKeyword, {
+vim.api.nvim_create_user_command("YqKeyword", yq.searchKeyword, {
 	nargs = '*',
 	complete = "file_in_path"
 })
