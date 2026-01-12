@@ -21,28 +21,6 @@ vim.opt.winborder = "single"
 vim.opt.conceallevel = 0
 vim.g.markdown_fenced_languages = { "bash", "lua" }
 
--- vim.opt.rtp:prepend(vim.fn.stdpath("data").."/lazy/lazy.nvim")
--- require("lazy").setup({
--- 	spec = {
--- 		{
--- 			"dracula/vim",
--- 			name = "dracula",
--- 			lazy = true
--- 		},
--- 		{
--- 			"rose-pine/neovim",
--- 			name = "rose-pine",
--- 			lazy = true
--- 		},
--- 		{
--- 			"neovim/nvim-lspconfig"
--- 		},
--- 		{
--- 			"tpope/vim-fugitive"
--- 		},
--- 	}
--- })
-
 vim.lsp.enable({ "lua_ls", "clangd" })
 vim.api.nvim_create_autocmd("LspAttach", {
 	callback = function(ev)
@@ -96,6 +74,31 @@ vim.lsp.config("lua_ls", {
 vim.opt.completeopt = { "menuone", "noinsert", "noselect", "popup", "preview" }
 
 vim.cmd.packadd("rose-pine")
+-- configuring the colourscheme
+require("rose-pine").setup({
+	styles = {
+		bold = true,
+		italic = false,
+		transparency = false
+	},
+	groups = {
+		h1 = "iris",
+		h2 = "iris",
+		h3 = "iris",
+		h4 = "iris",
+		h5 = "iris",
+		h6 = "iris",
+	},
+	highlight_groups = {
+		StatusLine = { fg = "surface", bg = "text" },
+		PmenuSel = { fg = "surface", bg = "foam" },
+	},
+	palette = {
+		main = {
+			text = "#e0e0e0"
+		}
+	}
+})
 vim.cmd.colorscheme("rose-pine")
 
 vim.cmd.packadd("gorbanyov-info")
