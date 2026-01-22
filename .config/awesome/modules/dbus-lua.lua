@@ -1,13 +1,13 @@
 local lgi = require("lgi")
 GLib, Gio = lgi.GLib, lgi.Gio
 
-local Bus = { }
+local Bus = {
+	SYSTEM = Gio.bus_get_sync(Gio.BusType["SYSTEM"]),
+	SESSION = Gio.bus_get_sync(Gio.BusType["SESSION"]),
+}
 
 setmetatable(Bus, {
 	__index = function(t, k)
-		if k == "SYSTEM" or k == "SESSION" then
-			return Gio.bus_get_sync(Gio.BusType[k])
-		end
 		if type(k) == "string" then
 			t[k] = Gio.DBusConnection.new_for_address_sync(
 				k, Gio.DBusConnectionFlags.AUTHENTICATION_CLIENT, nil
